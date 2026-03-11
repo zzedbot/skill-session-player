@@ -15,7 +15,17 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
 
 // 初始化元数据文件
 if (!fs.existsSync(METADATA_PATH)) {
-    fs.writeFileSync(METADATA_PATH, JSON.stringify({}, null, 2), 'utf8');
+    // 尝试从示例文件复制
+    const examplePath = path.join(RECORDINGS_DIR, 'metadata.example.json');
+    if (fs.existsSync(examplePath)) {
+        const example = JSON.parse(fs.readFileSync(examplePath, 'utf8'));
+        // 只保留空 metadata 对象
+        fs.writeFileSync(METADATA_PATH, JSON.stringify({}, null, 2), 'utf8');
+        console.log('✅ 从示例文件创建 metadata.json');
+    } else {
+        fs.writeFileSync(METADATA_PATH, JSON.stringify({}, null, 2), 'utf8');
+        console.log('✅ 创建空 metadata.json');
+    }
 }
 
 app.use(express.json());

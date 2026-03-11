@@ -1,0 +1,18 @@
+{
+  "_comment": "OpenClaw Session Player - Metadata Configuration",
+  "_description": "This file stores metadata for session recordings including custom titles, categories, tags, notes, and starred status.",
+  "_version": "1.0",
+  "_example": {
+    "example-recording.json": {
+      "originalFilename": "example-recording.json",
+      "customTitle": "My Custom Title",
+      "category": "uncategorized",
+      "tags": ["tag1", "tag2"],
+      "note": "Your notes here...",
+      "starred": false,
+      "createdAt": "2026-03-11T00:00:00.000Z",
+      "updatedAt": "2026-03-11T00:00:00.000Z"
+    }
+  },
+  "metadata": {}
+}

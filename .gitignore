@@ -1,7 +1,15 @@
 node_modules/
 *.log
 .DS_Store
-recordings/*.json
+# 录制文件（包含敏感信息）
+recordings/uncategorized/*.json
+recordings/*/*.json
+
+# 元数据文件（运行时创建）
+recordings/metadata.json
+
+# 保留示例文件和占位符
+!recordings/metadata.example.json
 !recordings/.gitkeep
 .env
 .env.local
