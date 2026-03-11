@@ -271,11 +271,67 @@
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
         }
+
+        /* ===== 提示框样式 ===== */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 300px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: #00ff88;
+        }
+
+        .toast.success .toast-icon {
+            color: #00ff88;
+        }
+
+        .toast.error {
+            border-color: #ff6b6b;
+        }
+
+        .toast.error .toast-icon {
+            color: #ff6b6b;
+        }
+
+        .toast-icon {
+            font-size: 1.3rem;
+        }
+
+        .toast-message {
+            color: #fff;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
     <button class="refresh-btn" onclick="loadRecordings()" title="刷新">🔄</button>
     
+    <!-- 提示框 -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toast-icon"></span>
+        <span class="toast-message" id="toast-message"></span>
+    </div>
+
     <!-- 重命名对话框 -->
     <div class="modal-overlay" id="rename-modal">
         <div class="modal">
@@ -397,14 +453,14 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('重命名成功！');
+                    showToast('重命名成功！', 'success');
                     closeRenameModal();
                     loadRecordings(); // 重新加载列表
                 } else {
-                    alert('重命名失败：' + result.error);
+                    showToast('重命名失败：' + result.error, 'error');
                 }
             } catch (error) {
-                alert('重命名失败：' + error.message);
+                showToast('重命名失败：' + error.message, 'error');
             }
         }
 
@@ -414,6 +470,26 @@
                 confirmRename();
             }
         });
+
+        // ===== 提示框功能 =====
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-message');
+
+            icon.textContent = type === 'success' ? '✅' : '❌';
+            msg.textContent = message;
+
+            toast.className = `toast ${type}`;
+            
+            // 显示提示框
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // 3 秒后自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
