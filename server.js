@@ -243,7 +243,16 @@ const handleRecordingsList = (req, res) => {
 const handleGetRecording = (req, res) => {
     try {
         const filename = req.params.filename;
-        const filePath = path.join(RECORDINGS_DIR, filename);
+        
+        // 读取元数据查找文件实际位置
+        let metadata = {};
+        if (fs.existsSync(METADATA_PATH)) {
+            metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+        
+        const fileMeta = metadata[filename];
+        const category = fileMeta?.category || 'uncategorized';
+        const filePath = path.join(RECORDINGS_DIR, category, filename);
         
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ success: false, error: '文件不存在' });

@@ -561,7 +561,13 @@
         }
 
         const API_BASE = getApiBase();
-        const filename = window.location.pathname.split('/').pop();
+        
+        // 从路径中提取分类和文件名
+        // 路径格式：/session-player/player/:category/:filename
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const filename = pathParts.pop(); // 最后一部分是文件名
+        const category = pathParts.pop() || 'uncategorized'; // 倒数第二部分是分类
+        
             user: { 
                 icon: '👤', 
                 label: '你', 
@@ -590,15 +596,31 @@
 
         async function loadRecording() {
             try {
-                const response = await fetch(`${API_BASE}/api/recordings/${filename}`);
+                // 从元数据 API 获取录制信息（支持分类目录）
+                const response = await fetch(`${API_BASE}/api/recordings`);
                 const data = await response.json();
 
                 if (!data.success) {
                     throw new Error(data.error);
                 }
 
-                recording = data.recording;
-                const title = recording.recordingInfo?.title || filename.replace('.json', '');
+                // 查找匹配的录制文件
+                const recordingData = data.recordings.find(r => r.filename === filename);
+                
+                if (!recordingData) {
+                    throw new Error(`文件 "${filename}" 不存在`);
+                }
+
+                // 从实际文件加载完整内容
+                const fileResponse = await fetch(`${API_BASE}/api/recordings/${filename}`);
+                const fileData = await fileResponse.json();
+                
+                if (!fileData.success) {
+                    throw new Error(fileData.error);
+                }
+
+                recording = fileData.recording;
+                const title = recording.recordingInfo?.title || recordingData.name || filename.replace('.json', '');
                 document.getElementById('page-title').textContent = `🎬 ${title}`;
                 renderMessages();
 
