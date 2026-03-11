@@ -507,6 +507,9 @@
             <button class="control-btn" id="play-btn" onclick="togglePlay()">
                 <span>▶️</span> <span>播放</span>
             </button>
+            <button class="control-btn" onclick="loadAll()">
+                <span>⏩</span> <span>全部加载</span>
+            </button>
             <button class="control-btn" onclick="reset()">
                 <span>⏮️</span> <span>重置</span>
             </button>
@@ -942,6 +945,30 @@
             document.querySelector('.chat-container').scrollTop = 0;
         }
 
+        function loadAll() {
+            // 暂停播放
+            pause();
+            
+            // 显示所有组容器和折叠头
+            document.querySelectorAll('[data-group-id]').forEach(group => {
+                group.style.display = 'flex';
+                const header = group.querySelector('.collapsible-header');
+                if (header) header.style.display = 'flex';
+            });
+            
+            // 显示所有消息
+            document.querySelectorAll('.message').forEach(msg => {
+                msg.classList.add('visible');
+            });
+            
+            // 更新当前索引到最后
+            currentIndex = recording.messages.length;
+            updateProgress();
+            
+            // 滚动到顶部
+            document.querySelector('.chat-container').scrollTop = 0;
+        }
+
         function skipForward() {
             const skipCount = Math.ceil(5 * speed);
             for (let i = 0; i < skipCount && currentIndex < recording.messages.length; i++) {
@@ -979,6 +1006,8 @@
                 togglePlay();
             } else if (e.code === 'KeyR') {
                 reset();
+            } else if (e.code === 'KeyL') {
+                loadAll();
             } else if (e.code === 'ArrowRight') {
                 skipForward();
             }
