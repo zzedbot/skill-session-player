@@ -6,10 +6,16 @@ const auth = require('./auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const RECORDINGS_DIR = path.join(__dirname, 'recordings');
+const METADATA_PATH = path.join(RECORDINGS_DIR, 'metadata.json');
 
 // 确保录制目录存在
 if (!fs.existsSync(RECORDINGS_DIR)) {
     fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
+}
+
+// 初始化元数据文件
+if (!fs.existsSync(METADATA_PATH)) {
+    fs.writeFileSync(METADATA_PATH, JSON.stringify({}, null, 2), 'utf8');
 }
 
 app.use(express.json());
@@ -158,24 +164,66 @@ app.use(express.static(__dirname, {
 // 通用处理函数 - 获取所有录制文件列表
 const handleRecordingsList = (req, res) => {
     try {
-        const files = fs.readdirSync(RECORDINGS_DIR)
-            .filter(f => f.endsWith('.json'))
-            .map(f => {
-                const filePath = path.join(RECORDINGS_DIR, f);
+        const { category, tag, starred } = req.query;
+        
+        // 读取元数据
+        let metadata = {};
+        if (fs.existsSync(METADATA_PATH)) {
+            metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+        
+        // 获取所有分类目录
+        const categories = fs.readdirSync(RECORDINGS_DIR)
+            .filter(item => {
+                const itemPath = path.join(RECORDINGS_DIR, item);
+                return fs.statSync(itemPath).isDirectory() && item !== 'node_modules';
+            });
+        
+        // 扫描所有分类目录中的文件
+        const files = [];
+        categories.forEach(cat => {
+            const catPath = path.join(RECORDINGS_DIR, cat);
+            const catFiles = fs.readdirSync(catPath)
+                .filter(f => f.endsWith('.json'))
+                .map(f => ({ filename: f, category: cat, path: path.join(catPath, f) }));
+            files.push(...catFiles);
+        });
+        
+        // 构建录制列表
+        const recordings = files
+            .map(({ filename, category, path: filePath }) => {
                 const stats = fs.statSync(filePath);
-                const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                const meta = metadata[filename] || {};
+                
                 return {
-                    filename: f,
-                    name: f.replace('.json', ''),
+                    filename,
+                    name: meta.customTitle || filename.replace('.json', ''),
+                    category: meta.category || category,
+                    tags: meta.tags || [],
+                    note: meta.note || '',
+                    starred: meta.starred || false,
                     size: stats.size,
                     createdAt: stats.birthtime,
-                    recordingInfo: content.recordingInfo,
-                    messageCount: content.messages?.length || 0
+                    recordingInfo: null, // 不加载完整内容，提高性能
+                    messageCount: 0
                 };
+            })
+            .filter(rec => {
+                // 应用筛选
+                if (category && category !== 'all' && rec.category !== category) {
+                    return false;
+                }
+                if (tag && tag !== 'all' && !rec.tags.includes(tag)) {
+                    return false;
+                }
+                if (starred === 'true' && !rec.starred) {
+                    return false;
+                }
+                return true;
             })
             .sort((a, b) => b.createdAt - a.createdAt);
         
-        res.json({ success: true, recordings: files });
+        res.json({ success: true, recordings });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -242,6 +290,130 @@ const handleRenameRecording = (req, res) => {
     }
 };
 
+// 通用处理函数 - 更新元数据
+const handleUpdateMetadata = (req, res) => {
+    try {
+        const { filename, customTitle, category, tags, note, starred } = req.body;
+        
+        if (!filename) {
+            return res.status(400).json({ success: false, error: '请提供文件名' });
+        }
+        
+        // 读取元数据
+        let metadata = {};
+        if (fs.existsSync(METADATA_PATH)) {
+            metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+        
+        // 更新或创建元数据
+        if (!metadata[filename]) {
+            metadata[filename] = {
+                originalFilename: filename,
+                customTitle: customTitle || filename.replace('.json', ''),
+                category: category || 'uncategorized',
+                tags: tags || [],
+                note: note || '',
+                starred: starred || false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+        } else {
+            metadata[filename].customTitle = customTitle !== undefined ? customTitle : metadata[filename].customTitle;
+            metadata[filename].category = category !== undefined ? category : metadata[filename].category;
+            metadata[filename].tags = tags !== undefined ? tags : metadata[filename].tags;
+            metadata[filename].note = note !== undefined ? note : metadata[filename].note;
+            metadata[filename].starred = starred !== undefined ? starred : metadata[filename].starred;
+            metadata[filename].updatedAt = new Date().toISOString();
+        }
+        
+        // 如果分类变更，需要移动文件
+        if (category && metadata[filename].category !== 'uncategorized') {
+            const targetDir = path.join(RECORDINGS_DIR, category);
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+            
+            const oldPath = path.join(RECORDINGS_DIR, filename);
+            const newPath = path.join(targetDir, filename);
+            
+            if (fs.existsSync(oldPath)) {
+                fs.renameSync(oldPath, newPath);
+            }
+        }
+        
+        // 保存元数据
+        fs.writeFileSync(METADATA_PATH, JSON.stringify(metadata, null, 2), 'utf8');
+        
+        res.json({ success: true, metadata: metadata[filename] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// 通用处理函数 - 获取所有分类
+const handleGetCategories = (req, res) => {
+    try {
+        const items = fs.readdirSync(RECORDINGS_DIR);
+        const categories = items.filter(item => {
+            const itemPath = path.join(RECORDINGS_DIR, item);
+            return fs.statSync(itemPath).isDirectory() && item !== 'node_modules';
+        });
+        
+        res.json({ success: true, categories });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// 通用处理函数 - 创建分类
+const handleCreateCategory = (req, res) => {
+    try {
+        const { name } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ success: false, error: '请提供分类名称' });
+        }
+        
+        // 验证分类名称
+        if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+            return res.status(400).json({ success: false, error: '分类名称只能包含字母、数字、连字符和下划线' });
+        }
+        
+        const categoryPath = path.join(RECORDINGS_DIR, name);
+        
+        if (fs.existsSync(categoryPath)) {
+            return res.status(400).json({ success: false, error: '分类已存在' });
+        }
+        
+        fs.mkdirSync(categoryPath, { recursive: true });
+        res.json({ success: true, name });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// 通用处理函数 - 获取所有标签
+const handleGetTags = (req, res) => {
+    try {
+        let metadata = {};
+        if (fs.existsSync(METADATA_PATH)) {
+            metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+        
+        // 收集所有标签
+        const tagSet = new Set();
+        Object.values(metadata).forEach(meta => {
+            if (meta.tags && Array.isArray(meta.tags)) {
+                meta.tags.forEach(tag => tagSet.add(tag));
+            }
+        });
+        
+        res.json({ success: true, tags: Array.from(tagSet) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // API 路由 - 支持两种路径模式
 app.get(['/api/recordings', '/session-player/api/recordings'], handleRecordingsList);
 app.get(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleGetRecording);
@@ -250,6 +422,16 @@ app.delete(['/api/recordings/:filename', '/session-player/api/recordings/:filena
 // 重命名 API - 分开定义两个路由
 app.put('/api/recordings/rename', handleRenameRecording);
 app.put('/session-player/api/recordings/rename', handleRenameRecording);
+
+// 元数据 API
+app.put(['/api/recordings/:filename/metadata', '/session-player/api/recordings/:filename/metadata'], handleUpdateMetadata);
+
+// 分类管理 API
+app.get(['/api/categories', '/session-player/api/categories'], handleGetCategories);
+app.post(['/api/categories', '/session-player/api/categories'], handleCreateCategory);
+
+// 标签管理 API
+app.get(['/api/tags', '/session-player/api/tags'], handleGetTags);
 
 // 主页 - 支持两种路径
 app.get(['/', '/session-player/'], (req, res) => {

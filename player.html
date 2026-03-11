@@ -550,7 +550,6 @@
         let playInterval = null;
         let speed = 1;
         let collapsedGroups = new Set(); // 记录折叠的组 ID
-        const filename = window.location.pathname.split('/').pop();
 
         // 自动检测 API 基础路径
         function getApiBase() {
@@ -562,8 +561,7 @@
         }
 
         const API_BASE = getApiBase();
-
-        const roleConfig = {
+        const filename = window.location.pathname.split('/').pop();
             user: { 
                 icon: '👤', 
                 label: '你', 

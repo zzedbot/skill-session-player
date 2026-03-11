@@ -19,14 +19,14 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         h1 {
@@ -43,9 +43,115 @@
             font-size: 1.1rem;
         }
 
+        /* ===== 工具栏 ===== */
+        .toolbar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-item label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .filter-item select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .filter-item select:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== 录制卡片网格 ===== */
         .recordings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 20px;
         }
 
@@ -55,7 +161,7 @@
             border-radius: 12px;
             padding: 20px;
             transition: all 0.3s ease;
-            cursor: pointer;
+            position: relative;
         }
 
         .recording-card:hover {
@@ -64,71 +170,133 @@
             transform: translateY(-2px);
         }
 
-        .recording-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+        .recording-card.starred {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
         }
 
-        .recording-icon {
-            font-size: 2rem;
+        .star-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.3rem;
+            color: #ffd700;
         }
 
         .recording-name {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            padding-right: 30px;
         }
 
         .recording-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: #888;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .meta-item {
             background: rgba(255, 255, 255, 0.05);
             padding: 4px 10px;
             border-radius: 20px;
+            font-size: 0.85rem;
+            color: #888;
             display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .play-btn {
-            display: inline-block;
+        .category-tag {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .recording-note {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
             margin-top: 15px;
-            padding: 10px 25px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.primary {
             background: linear-gradient(90deg, #00d9ff, #00ff88);
             color: #1a1a2e;
             border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
         }
 
-        .play-btn:hover {
-            transform: scale(1.05);
+        .action-btn.primary:hover {
             box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
         }
 
+        /* ===== 空状态 ===== */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: #666;
         }
 
         .empty-state-icon {
-            font-size: 4rem;
+            font-size: 5rem;
             margin-bottom: 20px;
         }
 
+        .empty-state h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #888;
+        }
+
+        /* ===== 加载状态 ===== */
         .loading {
             text-align: center;
             padding: 60px;
@@ -136,59 +304,31 @@
             color: #888;
         }
 
+        /* ===== 刷新按钮 ===== */
         .refresh-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px 15px;
+            width: 45px;
+            height: 45px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border-radius: 50%;
             color: #fff;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .refresh-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
         }
 
-        /* ===== 重命名功能样式 ===== */
-        .card-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .action-btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #00d9ff;
-        }
-
-        .action-btn.rename-btn {
-            background: rgba(0, 217, 255, 0.2);
-            border-color: rgba(0, 217, 255, 0.4);
-        }
-
-        .action-btn.rename-btn:hover {
-            background: rgba(0, 217, 255, 0.3);
-        }
-
+        /* ===== 模态框 ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -211,41 +351,108 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             padding: 30px;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .modal-title {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
             color: #fff;
         }
 
-        .modal-input {
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 12px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             color: #fff;
-            font-size: 1rem;
-            margin-bottom: 20px;
+            font-size: 0.95rem;
+            font-family: inherit;
         }
 
-        .modal-input:focus {
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #00d9ff;
+        }
+
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .tag-input-container input {
+            flex: 1;
+            min-width: 100px;
+            border: none;
+            background: transparent;
+            padding: 5px;
+        }
+
+        .tag-input-container input:focus {
+            outline: none;
+        }
+
+        .existing-tag {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .existing-tag .remove-tag {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .existing-tag .remove-tag:hover {
+            opacity: 1;
         }
 
         .modal-actions {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
+            margin-top: 25px;
         }
 
         .modal-btn {
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 8px;
             border: none;
             cursor: pointer;
@@ -272,7 +479,7 @@
             box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
         }
 
-        /* ===== 提示框样式 ===== */
+        /* ===== Toast 提示框 ===== */
         .toast {
             position: fixed;
             top: 20px;
@@ -321,25 +528,95 @@
             color: #fff;
             font-size: 0.95rem;
         }
+
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .recordings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <button class="refresh-btn" onclick="loadRecordings()" title="刷新">🔄</button>
     
-    <!-- 提示框 -->
+    <!-- Toast 提示框 -->
     <div class="toast" id="toast">
         <span class="toast-icon" id="toast-icon"></span>
         <span class="toast-message" id="toast-message"></span>
     </div>
 
-    <!-- 重命名对话框 -->
-    <div class="modal-overlay" id="rename-modal">
+    <!-- 编辑对话框 -->
+    <div class="modal-overlay" id="edit-modal">
         <div class="modal">
-            <h3 class="modal-title">📝 重命名会话</h3>
-            <input type="text" class="modal-input" id="rename-input" placeholder="输入新名称">
+            <h3 class="modal-title">📝 编辑会话信息</h3>
+            
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="edit-title" placeholder="输入自定义标题">
+            </div>
+            
+            <div class="form-group">
+                <label>分类</label>
+                <select id="edit-category"></select>
+            </div>
+            
+            <div class="form-group">
+                <label>标签（按回车添加）</label>
+                <div class="tag-input-container" id="edit-tags-container">
+                    <input type="text" id="edit-tag-input" placeholder="添加标签...">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>备注</label>
+                <textarea id="edit-note" placeholder="添加备注信息..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="edit-starred">
+                    ⭐ 星标此会话
+                </label>
+            </div>
+            
             <div class="modal-actions">
-                <button class="modal-btn cancel" onclick="closeRenameModal()">取消</button>
-                <button class="modal-btn confirm" onclick="confirmRename()">确认</button>
+                <button class="modal-btn cancel" onclick="closeEditModal()">取消</button>
+                <button class="modal-btn confirm" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建分类对话框 -->
+    <div class="modal-overlay" id="new-category-modal">
+        <div class="modal">
+            <h3 class="modal-title">📁 新建分类</h3>
+            
+            <div class="form-group">
+                <label>分类名称</label>
+                <input type="text" id="new-category-name" placeholder="如：project-alpha">
+            </div>
+            
+            <p style="color: #666; font-size: 0.85rem; margin-bottom: 20px;">
+                ⚠️ 分类名称只能包含字母、数字、连字符和下划线
+            </p>
+            
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeNewCategoryModal()">取消</button>
+                <button class="modal-btn confirm" onclick="createCategory()">创建</button>
             </div>
         </div>
     </div>
@@ -350,18 +627,63 @@
             <p class="subtitle">查看和回放你的 AI 会话记录</p>
         </header>
 
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 搜索会话..." onkeyup="handleSearch(event)">
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label>📁 分类:</label>
+                    <select id="filter-category" onchange="loadRecordings()">
+                        <option value="all">全部分类</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label>🏷️ 标签:</label>
+                    <select id="filter-tag" onchange="loadRecordings()">
+                        <option value="all">全部标签</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-starred" onchange="loadRecordings()">
+                        ⭐ 仅星标
+                    </label>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="openNewCategoryModal()">+ 新建分类</button>
+            </div>
+        </div>
+
         <div id="recordings-grid" class="recordings-grid">
             <div class="loading">正在加载录制文件...</div>
         </div>
     </div>
 
     <script>
+        let currentEditFilename = null;
+        let currentTags = [];
+
+        // ===== 加载录制列表 =====
         async function loadRecordings() {
             const grid = document.getElementById('recordings-grid');
             grid.innerHTML = '<div class="loading">正在加载录制文件...</div>';
 
+            const category = document.getElementById('filter-category').value;
+            const tag = document.getElementById('filter-tag').value;
+            const starred = document.getElementById('filter-starred').checked;
+
             try {
-                const response = await fetch('/session-player/api/recordings');
+                const params = new URLSearchParams();
+                if (category !== 'all') params.append('category', category);
+                if (tag !== 'all') params.append('tag', tag);
+                if (starred) params.append('starred', 'true');
+
+                const response = await fetch(`/session-player/api/recordings?${params}`);
                 const data = await response.json();
 
                 if (!data.success || data.recordings.length === 0) {
@@ -376,23 +698,29 @@
                 }
 
                 grid.innerHTML = data.recordings.map(rec => `
-                    <div class="recording-card" onclick="event.target.tagName !== 'BUTTON' && (window.location.href='/session-player/player/${rec.filename}')">
-                        <div class="recording-header">
-                            <span class="recording-icon">🎬</span>
-                        </div>
-                        <div class="recording-name">${rec.name}</div>
+                    <div class="recording-card ${rec.starred ? 'starred' : ''}">
+                        ${rec.starred ? '<span class="star-badge">⭐</span>' : ''}
+                        <div class="recording-name">${escapeHtml(rec.name)}</div>
                         <div class="recording-meta">
+                            <span class="meta-item category-tag">📁 ${rec.category || 'uncategorized'}</span>
                             <span class="meta-item">📅 ${new Date(rec.createdAt).toLocaleDateString('zh-CN')}</span>
                             <span class="meta-item">⏰ ${new Date(rec.createdAt).toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})}</span>
-                            <span class="meta-item">💬 ${rec.messageCount} 条消息</span>
-                            <span class="meta-item">🤖 ${rec.recordingInfo?.model || '未知'}</span>
                         </div>
+                        ${rec.tags && rec.tags.length > 0 ? `
+                            <div class="tag-list">
+                                ${rec.tags.map(t => `<span class="tag">🏷️ ${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${rec.note ? `<div class="recording-note">📝 ${escapeHtml(rec.note)}</div>` : ''}
                         <div class="card-actions">
-                            <a href="/session-player/player/${rec.filename}" class="action-btn">▶️ 播放</a>
-                            <button class="action-btn rename-btn" onclick="openRenameModal('${rec.filename}', '${rec.name}')">✏️ 重命名</button>
+                            <a href="/session-player/player/${rec.category || 'uncategorized'}/${rec.filename}" class="action-btn primary">▶️ 播放</a>
+                            <button class="action-btn" onclick="openEditModal('${rec.filename}')">✏️ 编辑</button>
                         </div>
                     </div>
                 `).join('');
+
+                // 加载分类和标签筛选器
+                loadFilters();
 
             } catch (error) {
                 grid.innerHTML = `
@@ -405,73 +733,223 @@
             }
         }
 
-        loadRecordings();
+        // ===== 加载筛选器选项 =====
+        async function loadFilters() {
+            try {
+                // 加载分类
+                const catRes = await fetch('/session-player/api/categories');
+                const catData = await catRes.json();
+                const catSelect = document.getElementById('filter-category');
+                const currentCat = catSelect.value;
+                
+                catSelect.innerHTML = '<option value="all">全部分类</option>' +
+                    (catData.categories || []).map(c => 
+                        `<option value="${c}">${c}</option>`
+                    ).join('');
+                
+                catSelect.value = currentCat;
 
-        // ===== 重命名功能 =====
-        let currentFilename = null;
+                // 加载标签
+                const tagRes = await fetch('/session-player/api/tags');
+                const tagData = await tagRes.json();
+                const tagSelect = document.getElementById('filter-tag');
+                const currentTag = tagSelect.value;
+                
+                tagSelect.innerHTML = '<option value="all">全部标签</option>' +
+                    (tagData.tags || []).map(t => 
+                        `<option value="${t}">${t}</option>`
+                    ).join('');
+                
+                tagSelect.value = currentTag;
 
-        function openRenameModal(filename, name) {
-            event.stopPropagation(); // 阻止卡片点击事件
-            currentFilename = filename;
-            const modal = document.getElementById('rename-modal');
-            const input = document.getElementById('rename-input');
-            input.value = name.replace('.json', '');
-            modal.classList.add('show');
-            input.focus();
+            } catch (error) {
+                console.error('加载筛选器失败:', error);
+            }
         }
 
-        function closeRenameModal() {
-            const modal = document.getElementById('rename-modal');
-            modal.classList.remove('show');
-            currentFilename = null;
+        // ===== 搜索功能 =====
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.recording-card');
+                
+                cards.forEach(card => {
+                    const name = card.querySelector('.recording-name').textContent.toLowerCase();
+                    const note = card.querySelector('.recording-note')?.textContent.toLowerCase() || '';
+                    const tags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.toLowerCase()).join(' ');
+                    
+                    const match = name.includes(query) || note.includes(query) || tags.includes(query);
+                    card.style.display = match ? 'block' : 'none';
+                });
+            }
         }
 
-        async function confirmRename() {
-            const input = document.getElementById('rename-input');
-            const newName = input.value.trim();
+        // ===== 编辑功能 =====
+        async function openEditModal(filename) {
+            event.stopPropagation();
+            currentEditFilename = filename;
+            currentTags = [];
 
-            if (!newName) {
-                alert('请输入文件名');
+            try {
+                // 获取元数据（从列表中查找）
+                const card = document.querySelector(`[onclick="openEditModal('${filename}')"]`).closest('.recording-card');
+                const title = card.querySelector('.recording-name').textContent;
+                const category = card.querySelector('.category-tag')?.textContent.replace('📁 ', '') || 'uncategorized';
+                const tags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.replace('🏷️ ', ''));
+                const note = card.querySelector('.recording-note')?.textContent.replace('📝 ', '') || '';
+                const starred = card.classList.contains('starred');
+
+                document.getElementById('edit-title').value = title;
+                document.getElementById('edit-category').value = category;
+                document.getElementById('edit-note').value = note;
+                document.getElementById('edit-starred').checked = starred;
+                
+                currentTags = [...tags];
+                renderTags();
+
+                // 加载分类选项
+                const catRes = await fetch('/session-player/api/categories');
+                const catData = await catRes.json();
+                const catSelect = document.getElementById('edit-category');
+                catSelect.innerHTML = (catData.categories || []).map(c => 
+                    `<option value="${c}">${c}</option>`
+                ).join('');
+                catSelect.value = category;
+
+                const modal = document.getElementById('edit-modal');
+                modal.classList.add('show');
+
+            } catch (error) {
+                showToast('加载编辑信息失败：' + error.message, 'error');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+            currentEditFilename = null;
+            currentTags = [];
+        }
+
+        async function saveEdit() {
+            const title = document.getElementById('edit-title').value.trim();
+            const category = document.getElementById('edit-category').value;
+            const note = document.getElementById('edit-note').value.trim();
+            const starred = document.getElementById('edit-starred').checked;
+
+            if (!title) {
+                showToast('请输入标题', 'error');
                 return;
             }
 
-            // 自动检测 API 路径
-            const apiBase = window.location.pathname.includes('/session-player/') ? '/session-player' : '';
-
             try {
-                const response = await fetch(`${apiBase}/api/recordings/rename`, {
+                const response = await fetch(`/session-player/api/recordings/${currentEditFilename}/metadata`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        filename: currentFilename,
-                        newName: newName.endsWith('.json') ? newName : newName + '.json'
+                        filename: currentEditFilename,
+                        customTitle: title,
+                        category,
+                        tags: currentTags,
+                        note,
+                        starred
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('重命名成功！', 'success');
-                    closeRenameModal();
-                    loadRecordings(); // 重新加载列表
+                    showToast('保存成功！', 'success');
+                    closeEditModal();
+                    loadRecordings();
                 } else {
-                    showToast('重命名失败：' + result.error, 'error');
+                    showToast('保存失败：' + result.error, 'error');
                 }
             } catch (error) {
-                showToast('重命名失败：' + error.message, 'error');
+                showToast('保存失败：' + error.message, 'error');
             }
         }
 
-        // 回车键确认重命名
-        document.getElementById('rename-input').addEventListener('keypress', (e) => {
+        // ===== 标签管理 =====
+        function renderTags() {
+            const container = document.getElementById('edit-tags-container');
+            const input = document.getElementById('edit-tag-input');
+            
+            // 保留输入框，移除已有标签
+            Array.from(container.querySelectorAll('.existing-tag')).forEach(t => t.remove());
+            
+            currentTags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'existing-tag';
+                tagEl.innerHTML = `${escapeHtml(tag)} <span class="remove-tag" onclick="removeTag('${tag}')">×</span>`;
+                container.insertBefore(tagEl, input);
+            });
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        document.getElementById('edit-tag-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                confirmRename();
+                e.preventDefault();
+                const input = e.target;
+                const tag = input.value.trim();
+                
+                if (tag && !currentTags.includes(tag)) {
+                    currentTags.push(tag);
+                    renderTags();
+                    input.value = '';
+                }
             }
         });
 
-        // ===== 提示框功能 =====
+        // ===== 新建分类 =====
+        function openNewCategoryModal() {
+            document.getElementById('new-category-modal').classList.add('show');
+            document.getElementById('new-category-name').focus();
+        }
+
+        function closeNewCategoryModal() {
+            document.getElementById('new-category-modal').classList.remove('show');
+        }
+
+        async function createCategory() {
+            const name = document.getElementById('new-category-name').value.trim();
+            
+            if (!name) {
+                showToast('请输入分类名称', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+                showToast('分类名称只能包含字母、数字、连字符和下划线', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/session-player/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`分类 "${name}" 创建成功！`, 'success');
+                    closeNewCategoryModal();
+                    document.getElementById('new-category-name').value = '';
+                    loadFilters();
+                } else {
+                    showToast('创建失败：' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('创建失败：' + error.message, 'error');
+            }
+        }
+
+        // ===== Toast 提示框 =====
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -482,14 +960,19 @@
 
             toast.className = `toast ${type}`;
             
-            // 显示提示框
             setTimeout(() => toast.classList.add('show'), 10);
-
-            // 3 秒后自动隐藏
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
+
+        // ===== 工具函数 =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 初始化 =====
+        loadRecordings();
     </script>
 </body>
 </html>
