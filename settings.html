@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ 脱敏规则设置 - Session Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00d9ff;
+            color: #00d9ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .rules-list {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .rule-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rule-info {
+            flex: 1;
+        }
+
+        .rule-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00d9ff;
+            margin-bottom: 5px;
+        }
+
+        .rule-pattern {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .rule-replacement {
+            font-size: 0.9rem;
+            color: #00ff88;
+        }
+
+        .rule-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .test-section {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .test-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #00d9ff;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .test-result.success {
+            border-left: 3px solid #00ff88;
+        }
+
+        .test-result.error {
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .custom-replacements {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .replacement-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .replacement-item input {
+            flex: 1;
+        }
+
+        .replacement-item button {
+            padding: 8px 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ 脱敏规则设置</h1>
+            <p>自定义脱敏规则，保护敏感信息</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('rules')">📋 内置规则</div>
+            <div class="tab" onclick="switchTab('custom')">✏️ 自定义替换</div>
+            <div class="tab" onclick="switchTab('test')">🧪 规则测试</div>
+            <div class="tab" onclick="switchTab('import')">📥 导入/导出</div>
+        </div>
+
+        <!-- 内置规则 -->
+        <div id="rules-tab" class="tab-content active">
+            <div class="rules-list" id="rules-list">
+                <div class="loading">加载中...</div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="addRule()">+ 添加新规则</button>
+        </div>
+
+        <!-- 自定义替换 -->
+        <div id="custom-tab" class="tab-content">
+            <div class="custom-replacements">
+                <h3 style="margin-bottom: 15px;">自定义文本替换</h3>
+                <p style="color: #888; margin-bottom: 20px;">
+                    精确匹配的文本替换（不支持正则）
+                </p>
+                <div id="custom-replacements-list"></div>
+                <button class="btn btn-primary" onclick="addCustomReplacement()" style="margin-top: 15px;">
+                    + 添加自定义替换
+                </button>
+            </div>
+        </div>
+
+        <!-- 规则测试 -->
+        <div id="test-tab" class="tab-content">
+            <div class="test-section">
+                <h3>📝 输入测试文本</h3>
+                <div class="form-group">
+                    <textarea id="test-input" placeholder="输入包含敏感信息的文本，例如：&#10;我的邮箱是 test@example.com&#10;API 密钥是 sk-1234567890abcdef"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="testRules()">🧪 测试脱敏效果</button>
+                
+                <div id="test-result" class="test-result" style="display: none;">
+                    <h4 style="margin-bottom: 10px;">脱敏结果：</h4>
+                    <pre id="test-output" style="white-space: pre-wrap; word-break: break-word;"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导入/导出 -->
+        <div id="import-tab" class="tab-content">
+            <div class="rules-list">
+                <h3 style="margin-bottom: 15px;">📤 导出配置</h3>
+                <p style="color: #888; margin-bottom: 15px;">
+                    导出当前脱敏规则配置（不包含敏感数据）
+                </p>
+                <button class="btn btn-primary" onclick="exportConfig()">导出配置文件</button>
+            </div>
+
+            <div class="rules-list">
+                <h3 style="margin-bottom: 15px;">📥 导入配置</h3>
+                <p style="color: #888; margin-bottom: 15px;">
+                    导入脱敏规则配置文件
+                </p>
+                <input type="file" id="import-file" accept=".json" style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="importConfig()">导入配置文件</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑规则模态框 -->
+    <div class="modal" id="rule-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">添加规则</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>规则名称 *</label>
+                <input type="text" id="rule-name" placeholder="例如：邮箱地址">
+            </div>
+            
+            <div class="form-group">
+                <label>规则描述</label>
+                <input type="text" id="rule-description" placeholder="例如：匹配所有邮箱地址">
+            </div>
+            
+            <div class="form-group">
+                <label>正则表达式 *</label>
+                <input type="text" id="rule-pattern" placeholder="例如：[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+                <small>使用 JavaScript 正则表达式语法</small>
+            </div>
+            
+            <div class="form-group">
+                <label>替换文本 *</label>
+                <input type="text" id="rule-replacement" placeholder="例如：[REDACTED_EMAIL]">
+            </div>
+            
+            <div class="form-group">
+                <label>上下文匹配（可选）</label>
+                <input type="text" id="rule-context" placeholder="例如：IMAP|SMTP|mail">
+                <small>只有当文本中包含这些关键词时才应用此规则</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rule-enabled" checked>
+                    启用此规则
+                </label>
+            </div>
+            
+            <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveRule()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG_PATH = '/session-player/api/config/redact-rules';
+        let config = {
+            enabled: true,
+            rules: [],
+            customReplacements: {}
+        };
+        let editingRuleIndex = -1;
+
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'rules') {
+                loadRules();
+            } else if (tabName === 'custom') {
+                loadCustomReplacements();
+            }
+        }
+
+        // 加载规则列表
+        async function loadRules() {
+            try {
+                const response = await fetch(`${CONFIG_PATH}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    config = data.config;
+                    displayRules();
+                } else {
+                    // 加载示例配置
+                    const exampleResponse = await fetch('/session-player/config/redact-rules.example.json');
+                    const exampleConfig = await exampleResponse.json();
+                    config = exampleConfig;
+                    displayRules();
+                }
+            } catch (error) {
+                console.error('加载规则失败:', error);
+                document.getElementById('rules-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>加载规则失败，请确保 config/redact-rules.json 存在</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示规则列表
+        function displayRules() {
+            const list = document.getElementById('rules-list');
+            
+            if (!config.rules || config.rules.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>暂无规则</p>
+                        <button class="btn btn-primary" onclick="addRule()" style="margin-top: 15px;">
+                            + 添加第一条规则
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = config.rules.map((rule, index) => `
+                <div class="rule-item">
+                    <div class="rule-info">
+                        <div class="rule-name">${escapeHtml(rule.name)} ${!rule.enabled ? '<span style="color: #666; font-size: 0.85rem;">(已禁用)</span>' : ''}</div>
+                        <div class="rule-pattern">${escapeHtml(rule.pattern)}</div>
+                        <div class="rule-replacement">→ ${escapeHtml(rule.replacement)}</div>
+                        ${rule.description ? `<div style="color: #666; font-size: 0.85rem; margin-top: 5px;">${escapeHtml(rule.description)}</div>` : ''}
+                    </div>
+                    <div class="rule-actions">
+                        <button class="btn btn-secondary" onclick="editRule(${index})">✏️ 编辑</button>
+                        <button class="btn btn-danger" onclick="deleteRule(${index})">🗑️ 删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 添加规则
+        function addRule() {
+            editingRuleIndex = -1;
+            document.getElementById('modal-title').textContent = '添加规则';
+            document.getElementById('rule-name').value = '';
+            document.getElementById('rule-description').value = '';
+            document.getElementById('rule-pattern').value = '';
+            document.getElementById('rule-replacement').value = '';
+            document.getElementById('rule-context').value = '';
+            document.getElementById('rule-enabled').checked = true;
+            document.getElementById('rule-modal').classList.add('show');
+        }
+
+        // 编辑规则
+        function editRule(index) {
+            editingRuleIndex = index;
+            const rule = config.rules[index];
+            
+            document.getElementById('modal-title').textContent = '编辑规则';
+            document.getElementById('rule-name').value = rule.name || '';
+            document.getElementById('rule-description').value = rule.description || '';
+            document.getElementById('rule-pattern').value = rule.pattern || '';
+            document.getElementById('rule-replacement').value = rule.replacement || '';
+            document.getElementById('rule-context').value = rule.context || '';
+            document.getElementById('rule-enabled').checked = rule.enabled !== false;
+            document.getElementById('rule-modal').classList.add('show');
+        }
+
+        // 保存规则
+        async function saveRule() {
+            const rule = {
+                name: document.getElementById('rule-name').value.trim(),
+                description: document.getElementById('rule-description').value.trim(),
+                pattern: document.getElementById('rule-pattern').value.trim(),
+                replacement: document.getElementById('rule-replacement').value.trim(),
+                context: document.getElementById('rule-context').value.trim(),
+                enabled: document.getElementById('rule-enabled').checked
+            };
+            
+            // 验证
+            if (!rule.name || !rule.pattern || !rule.replacement) {
+                alert('请填写必填字段（名称、正则表达式、替换文本）');
+                return;
+            }
+            
+            // 验证正则表达式
+            try {
+                new RegExp(rule.pattern);
+            } catch (error) {
+                alert('正则表达式无效：' + error.message);
+                return;
+            }
+            
+            if (editingRuleIndex >= 0) {
+                config.rules[editingRuleIndex] = rule;
+            } else {
+                if (!config.rules) config.rules = [];
+                config.rules.push(rule);
+            }
+            
+            await saveConfig();
+            closeModal();
+            displayRules();
+        }
+
+        // 删除规则
+        async function deleteRule(index) {
+            if (confirm('确定要删除这条规则吗？')) {
+                config.rules.splice(index, 1);
+                await saveConfig();
+                displayRules();
+            }
+        }
+
+        // 加载自定义替换
+        function loadCustomReplacements() {
+            const list = document.getElementById('custom-replacements-list');
+            const replacements = config.customReplacements || {};
+            
+            const items = Object.entries(replacements)
+                .filter(([key]) => !key.startsWith('_'))
+                .map(([original, replacement]) => `
+                    <div class="replacement-item">
+                        <input type="text" value="${escapeHtml(original)}" placeholder="原文本" onchange="updateCustomReplacement(this, '${escapeHtml(original)}', 'original')">
+                        <span style="color: #888;">→</span>
+                        <input type="text" value="${escapeHtml(replacement)}" placeholder="替换为" onchange="updateCustomReplacement(this, '${escapeHtml(original)}', 'replacement')">
+                        <button class="btn btn-danger" onclick="removeCustomReplacement('${escapeHtml(original)}')">🗑️</button>
+                    </div>
+                `).join('');
+            
+            list.innerHTML = items || '<p style="color: #666;">暂无自定义替换</p>';
+        }
+
+        // 添加自定义替换
+        function addCustomReplacement() {
+            const list = document.getElementById('custom-replacements-list');
+            const div = document.createElement('div');
+            div.className = 'replacement-item';
+            div.innerHTML = `
+                <input type="text" placeholder="原文本" onchange="addCustomReplacementItem(this)">
+                <span style="color: #888;">→</span>
+                <input type="text" placeholder="替换为" onchange="addCustomReplacementItem(this)">
+                <button class="btn btn-danger" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+            list.appendChild(div);
+        }
+
+        // 保存自定义替换
+        async function addCustomReplacementItem(input) {
+            const items = input.parentElement.parentElement.querySelectorAll('.replacement-item');
+            const replacements = {};
+            
+            items.forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                const original = inputs[0].value.trim();
+                const replacement = inputs[1].value.trim();
+                if (original && replacement) {
+                    replacements[original] = replacement;
+                }
+            });
+            
+            config.customReplacements = replacements;
+            await saveConfig();
+        }
+
+        // 删除自定义替换
+        async function removeCustomReplacement(original) {
+            delete config.customReplacements[original];
+            await saveConfig();
+            loadCustomReplacements();
+        }
+
+        // 测试规则
+        async function testRules() {
+            const input = document.getElementById('test-input').value;
+            const resultDiv = document.getElementById('test-result');
+            const output = document.getElementById('test-output');
+            
+            try {
+                const response = await fetch('/session-player/api/redact/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: input,
+                        config: config
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    output.textContent = data.redacted;
+                    resultDiv.className = 'test-result success';
+                    resultDiv.style.display = 'block';
+                } else {
+                    output.textContent = '测试失败：' + data.error;
+                    resultDiv.className = 'test-result error';
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                output.textContent = '测试失败：' + error.message;
+                resultDiv.className = 'test-result error';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // 导出配置
+        function exportConfig() {
+            const exportData = {
+                enabled: config.enabled,
+                rules: config.rules,
+                customReplacements: config.customReplacements
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'redact-rules-export.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 导入配置
+        async function importConfig() {
+            const fileInput = document.getElementById('import-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择要导入的文件');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (confirm('导入将覆盖当前配置，确定要继续吗？')) {
+                        config = imported;
+                        await saveConfig();
+                        alert('导入成功！');
+                        loadRules();
+                    }
+                } catch (error) {
+                    alert('导入失败：' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 保存配置
+        async function saveConfig() {
+            try {
+                const response = await fetch(`${CONFIG_PATH}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    alert('保存失败：' + result.error);
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('rule-modal').classList.remove('show');
+        }
+
+        // 转义 HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 初始化
+        loadRules();
+    </script>
+</body>
+</html>

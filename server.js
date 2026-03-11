@@ -597,6 +597,81 @@ const handleMoveRecording = (req, res) => {
     }
 };
 
+// 通用处理函数 - 获取脱敏规则配置
+const handleGetRedactConfig = (req, res) => {
+    try {
+        const configPath = path.join(__dirname, 'config', 'redact-rules.json');
+        
+        if (!fs.existsSync(configPath)) {
+            return res.json({ 
+                success: false, 
+                error: '配置文件不存在',
+                message: '请复制 config/redact-rules.example.json 到 config/redact-rules.json'
+            });
+        }
+        
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        res.json({ success: true, config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// 通用处理函数 - 保存脱敏规则配置
+const handleSaveRedactConfig = (req, res) => {
+    try {
+        const configPath = path.join(__dirname, 'config', 'redact-rules.json');
+        const config = req.body;
+        
+        // 验证配置
+        if (!config.rules || !Array.isArray(config.rules)) {
+            return res.status(400).json({ success: false, error: '配置格式错误' });
+        }
+        
+        // 验证每个规则
+        for (const rule of config.rules) {
+            if (!rule.name || !rule.pattern || !rule.replacement) {
+                return res.status(400).json({ success: false, error: `规则 "${rule.name}" 缺少必填字段` });
+            }
+            try {
+                new RegExp(rule.pattern);
+            } catch (error) {
+                return res.status(400).json({ success: false, error: `规则 "${rule.name}" 的正则表达式无效` });
+            }
+        }
+        
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+        res.json({ success: true, message: '配置已保存' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// 通用处理函数 - 测试脱敏规则
+const handleTestRedact = (req, res) => {
+    try {
+        const { text, config } = req.body;
+        
+        if (!text) {
+            return res.status(400).json({ success: false, error: '请提供测试文本' });
+        }
+        
+        const Redactor = require('./lib/redactor');
+        const redactor = new Redactor();
+        
+        // 使用传入的配置（如果有）
+        if (config) {
+            redactor.config = config;
+            redactor.compiledRules = redactor.compileRules();
+        }
+        
+        const redacted = redactor.redact(text);
+        res.json({ success: true, redacted });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // API 路由 - 支持两种路径模式
 app.get(['/api/recordings', '/session-player/api/recordings'], handleRecordingsList);
 app.get(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleGetRecording);
@@ -619,6 +694,11 @@ app.get(['/api/tags', '/session-player/api/tags'], handleGetTags);
 // 移动文件 API
 app.put(['/api/recordings/:filename/move', '/session-player/api/recordings/:filename/move'], handleMoveRecording);
 
+// 脱敏规则配置 API
+app.get(['/api/config/redact-rules', '/session-player/api/config/redact-rules'], handleGetRedactConfig);
+app.put(['/api/config/redact-rules', '/session-player/api/config/redact-rules'], handleSaveRedactConfig);
+app.post(['/api/redact/test', '/session-player/api/redact/test'], handleTestRedact);
+
 // 主页 - 支持两种路径
 app.get(['/', '/session-player/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -637,6 +717,11 @@ app.get(['/player/:category/:filename', '/session-player/player/:category/:filen
 // 预览页面
 app.get(['/preview', '/session-player/preview'], (req, res) => {
     res.sendFile(path.join(__dirname, 'preview.html'));
+});
+
+// 设置页面
+app.get(['/settings', '/session-player/settings'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'settings.html'));
 });
 
 // 登录页面 - 支持两种路径（公开访问）
