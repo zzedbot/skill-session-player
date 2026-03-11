@@ -424,6 +424,86 @@ const handleGetTags = (req, res) => {
     }
 };
 
+// 通用处理函数 - 移动文件到另一个分类
+const handleMoveRecording = (req, res) => {
+    try {
+        const { filename, targetCategory } = req.body;
+        
+        if (!filename || !targetCategory) {
+            return res.status(400).json({ success: false, error: '请提供文件名和目标分类' });
+        }
+        
+        // 读取元数据
+        let metadata = {};
+        if (fs.existsSync(METADATA_PATH)) {
+            metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+        
+        // 查找文件当前分类
+        const currentMeta = metadata[filename];
+        const currentCategory = currentMeta?.category || 'uncategorized';
+        
+        // 如果目标分类相同，直接返回
+        if (targetCategory === currentCategory) {
+            return res.json({ success: true, message: '文件已在目标分类中' });
+        }
+        
+        // 构建源路径和目标路径
+        const sourceDir = path.join(RECORDINGS_DIR, currentCategory);
+        const targetDir = path.join(RECORDINGS_DIR, targetCategory);
+        const sourcePath = path.join(sourceDir, filename);
+        const targetPath = path.join(targetDir, filename);
+        
+        // 检查源文件是否存在
+        if (!fs.existsSync(sourcePath)) {
+            return res.status(404).json({ success: false, error: '文件不存在' });
+        }
+        
+        // 确保目标目录存在
+        if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+        }
+        
+        // 检查目标文件是否已存在
+        if (fs.existsSync(targetPath)) {
+            return res.status(400).json({ success: false, error: '目标分类中已存在同名文件' });
+        }
+        
+        // 移动文件
+        fs.renameSync(sourcePath, targetPath);
+        
+        // 更新元数据
+        if (!metadata[filename]) {
+            metadata[filename] = {
+                originalFilename: filename,
+                customTitle: filename.replace('.json', ''),
+                category: targetCategory,
+                tags: [],
+                note: '',
+                starred: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+        } else {
+            metadata[filename].category = targetCategory;
+            metadata[filename].updatedAt = new Date().toISOString();
+        }
+        
+        // 保存元数据
+        fs.writeFileSync(METADATA_PATH, JSON.stringify(metadata, null, 2), 'utf8');
+        
+        res.json({ 
+            success: true, 
+            message: `已移动到分类 "${targetCategory}"`,
+            filename,
+            fromCategory: currentCategory,
+            toCategory: targetCategory
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // API 路由 - 支持两种路径模式
 app.get(['/api/recordings', '/session-player/api/recordings'], handleRecordingsList);
 app.get(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleGetRecording);
@@ -442,6 +522,9 @@ app.post(['/api/categories', '/session-player/api/categories'], handleCreateCate
 
 // 标签管理 API
 app.get(['/api/tags', '/session-player/api/tags'], handleGetTags);
+
+// 移动文件 API
+app.put(['/api/recordings/:filename/move', '/session-player/api/recordings/:filename/move'], handleMoveRecording);
 
 // 主页 - 支持两种路径
 app.get(['/', '/session-player/'], (req, res) => {

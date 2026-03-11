@@ -131,6 +131,25 @@
             opacity: 0.6;
         }
 
+        /* ===== 拖拽样式 ===== */
+        .recording-card[draggable="true"] {
+            cursor: grab;
+        }
+
+        .recording-card[draggable="true"]:active {
+            cursor: grabbing;
+        }
+
+        .category-item.drag-over {
+            background: rgba(0, 217, 255, 0.3);
+            border: 2px dashed #00d9ff;
+            transform: scale(1.02);
+        }
+
+        .category-tree.dragging-over {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
         .category-tree::-webkit-scrollbar {
             width: 6px;
         }
@@ -1029,7 +1048,11 @@
                 
                 // 渲染分类树
                 let html = `
-                    <div class="category-item ${currentCategory === 'all' ? 'active' : ''}" onclick="selectCategory('all')">
+                    <div class="category-item ${currentCategory === 'all' ? 'active' : ''}" 
+                         onclick="selectCategory('all')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event, 'all')">
                         <span class="category-name">📊 全部分类</span>
                         <span class="category-count">${recordings.length}</span>
                     </div>
@@ -1037,7 +1060,11 @@
                 
                 // 未分类
                 html += `
-                    <div class="category-item ${currentCategory === 'uncategorized' ? 'active' : ''}" onclick="selectCategory('uncategorized')">
+                    <div class="category-item ${currentCategory === 'uncategorized' ? 'active' : ''}" 
+                         onclick="selectCategory('uncategorized')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event, 'uncategorized')">
                         <span class="category-name">📁 未分类</span>
                         <span class="category-count">${counts['uncategorized'] || 0}</span>
                     </div>
@@ -1047,7 +1074,11 @@
                 categories.forEach(cat => {
                     if (cat !== 'uncategorized') {
                         html += `
-                            <div class="category-item ${currentCategory === cat ? 'active' : ''}" onclick="selectCategory('${cat}')">
+                            <div class="category-item ${currentCategory === cat ? 'active' : ''}" 
+                                 onclick="selectCategory('${cat}')"
+                                 ondragover="handleDragOver(event)"
+                                 ondragleave="handleDragLeave(event)"
+                                 ondrop="handleDrop(event, '${cat}')">
                                 <span class="category-name">📁 ${escapeHtml(cat)}</span>
                                 <span class="category-count">${counts[cat] || 0}</span>
                             </div>
@@ -1101,7 +1132,11 @@
                 window.currentRecordings = data.recordings;
 
                 grid.innerHTML = data.recordings.map(rec => `
-                    <div class="recording-card ${rec.starred ? 'starred' : ''}">
+                    <div class="recording-card ${rec.starred ? 'starred' : ''}" 
+                         draggable="true" 
+                         data-filename="${rec.filename}"
+                         data-category="${rec.category || 'uncategorized'}"
+                         ondragstart="handleDragStart(event, '${rec.filename}', '${rec.category || 'uncategorized'}')">
                         ${rec.starred ? '<span class="star-badge">⭐</span>' : ''}
                         <div class="recording-name">${escapeHtml(rec.name)}</div>
                         <div class="recording-meta">
@@ -1439,6 +1474,87 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // ===== 拖拽功能 =====
+        let draggedFilename = null;
+        let draggedCategory = null;
+
+        function handleDragStart(event, filename, category) {
+            draggedFilename = filename;
+            draggedCategory = category;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', filename);
+            
+            // 添加拖拽视觉效果
+            setTimeout(() => {
+                event.target.style.opacity = '0.5';
+            }, 0);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        async function handleDrop(event, targetCategory) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            
+            // 恢复卡片透明度
+            document.querySelectorAll('.recording-card').forEach(card => {
+                card.style.opacity = '1';
+            });
+            
+            if (!draggedFilename) {
+                return;
+            }
+            
+            // 如果目标分类相同，不需要移动
+            if (targetCategory === draggedCategory) {
+                draggedFilename = null;
+                draggedCategory = null;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/session-player/api/recordings/${draggedFilename}/move`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: draggedFilename,
+                        targetCategory
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`已移动到分类 "${targetCategory}"`, 'success');
+                    loadCategoryTree();
+                    loadRecordings();
+                } else {
+                    showToast('移动失败：' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('移动失败：' + error.message, 'error');
+            }
+            
+            draggedFilename = null;
+            draggedCategory = null;
+        }
+
+        // 全局拖拽结束事件（清理）
+        document.addEventListener('dragend', (event) => {
+            event.target.style.opacity = '1';
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        });
 
         // ===== 初始化 =====
         loadCategoryTree();
