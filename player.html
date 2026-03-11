@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎬 会话播放器</title>
+    <!-- 引入 marked.js 用于 Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -313,6 +315,97 @@
         .message.thinking .message-text {
             color: #888;
         }
+
+        /* ===== Markdown 样式 ===== */
+        .message-text pre {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message-text code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        .message-text pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .message-text p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .message-text ul,
+        .message-text ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message-text li {
+            margin: 4px 0;
+        }
+
+        .message-text blockquote {
+            border-left: 3px solid rgba(0, 217, 255, 0.5);
+            padding-left: 12px;
+            margin: 10px 0;
+            color: #aaa;
+        }
+
+        .message-text table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .message-text th,
+        .message-text td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message-text th {
+            background: rgba(0, 217, 255, 0.2);
+            font-weight: 600;
+        }
+
+        .message-text tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .message-text a {
+            color: #00d9ff;
+            text-decoration: none;
+        }
+
+        .message-text a:hover {
+            text-decoration: underline;
+        }
+
+        .message-text h1,
+        .message-text h2,
+        .message-text h3,
+        .message-text h4,
+        .message-text h5,
+        .message-text h6 {
+            margin: 12px 0 8px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .message-text h1 { font-size: 1.5em; }
+        .message-text h2 { font-size: 1.3em; }
+        .message-text h3 { font-size: 1.1em; }
+        .message-text h4 { font-size: 1em; }
 
         /* 工具名称标签 */
         .tool-tag {
@@ -801,6 +894,22 @@
             const displayType = msg.isThinking ? 'thinking' : (msg.isToolCall ? 'toolCall' : 'text');
             const showToolTag = msg.toolName && !msg.isToolResult;
             
+            // 根据消息类型选择渲染方式
+            let contentHtml;
+            if (msg.isThinking) {
+                // 思考内容：纯文本，转义
+                contentHtml = escapeHtml(msg.content || '');
+            } else if (msg.isToolCall || msg.isToolResult) {
+                // 工具调用/结果：Markdown 渲染
+                contentHtml = renderMarkdown(msg.content || '');
+            } else if (isUser) {
+                // 用户消息：纯文本，转义
+                contentHtml = escapeHtml(msg.content || '');
+            } else {
+                // 助手回复：Markdown 渲染
+                contentHtml = renderMarkdown(msg.content || '');
+            }
+            
             return `
                 <div class="message ${config.class}" id="message-${msg.index}" data-index="${msg.index}">
                     <div class="avatar">${config.icon}</div>
@@ -814,11 +923,27 @@
                             <span>${time}</span>
                         </div>
                         <div class="message-bubble">
-                            <div class="message-text ${msg.isThinking ? 'thinking' : ''}">${escapeHtml(msg.content || '')}</div>
+                            <div class="message-text ${msg.isThinking ? 'thinking' : ''}">${contentHtml}</div>
                         </div>
                     </div>
                 </div>
             `;
+        }
+        
+        // Markdown 渲染函数
+        function renderMarkdown(text) {
+            if (!text) return '';
+            
+            // 配置 marked 选项
+            marked.setOptions({
+                breaks: true,        // 支持 GFM 换行
+                gfm: true,          // GitHub Flavored Markdown
+                headerIds: false,   // 不生成 ID（避免冲突）
+                mangle: false,      // 不转义 HTML
+                sanitize: false     // 允许 HTML（用于代码块等）
+            });
+            
+            return marked.parse(text);
         }
         
         function toggleCollapse(groupId) {
