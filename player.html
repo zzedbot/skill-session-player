@@ -918,13 +918,11 @@
                 // 检查当前消息是否属于可折叠的助手组（无论当前是否展开）
                 const msgElement = document.querySelector(`[data-index="${currentIndex}"]`);
                 const groupContainer = msgElement?.closest('.collapsible-group');
-                // 只要是可折叠的组（有多个消息），就使用 2 倍速
+                // 只要是可折叠的组（有多个消息），就使用 3 倍速
                 const isFastForwardGroup = groupContainer !== null;
                 
-                // 如果在可折叠组内，使用 2 倍速
-                const currentInterval = isFastForwardGroup ? baseInterval / 2 : baseInterval;
-                
-                console.log(`[播放] index=${currentIndex}, 可折叠组=${isFastForwardGroup}, 间隔=${currentInterval}ms`);
+                // 如果在可折叠组内，使用 3 倍速
+                const currentInterval = isFastForwardGroup ? baseInterval / 3 : baseInterval;
                 
                 showMessage(currentIndex);
                 currentIndex++;
