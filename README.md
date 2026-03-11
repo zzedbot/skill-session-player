@@ -32,7 +32,7 @@ npm start
 
 ### 5. 访问
 - **本地**: http://localhost:3000/
-- **互联网**: https://<your-domain>/session-player/
+- **互联网**: `https://<your-domain>/session-player/`
 
 ---
 

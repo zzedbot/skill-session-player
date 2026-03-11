@@ -141,7 +141,7 @@ http://localhost:3000/
 
 ### 互联网访问（配置 Nginx 后）
 ```
-https://<your-domain>/session-player/
+`https://<your-domain>/session-player/`
 ```
 
 ---

@@ -113,7 +113,7 @@ location /session-player/ {
 sudo /usr/sbin/nginx -t && sudo systemctl reload nginx
 ```
 
-4. 访问：https://<your-domain>/session-player/
+4. 访问：`https://<your-domain>/session-player/`
 
 ## 播放器操作
 

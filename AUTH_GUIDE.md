@@ -41,7 +41,7 @@
 ### 步骤 1: 访问登录页面
 
 **本地访问**: http://localhost:3000/session-player/login.html  
-**互联网访问**: https://<your-domain>/session-player/login.html
+**互联网访问**: `https://<your-domain>/session-player/login.html`
 
 > 💡 未登录时访问任何页面都会自动重定向到登录页
 

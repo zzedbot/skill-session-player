@@ -368,7 +368,7 @@ npm start
 
 # 2. 访问登录页
 # http://localhost:3000/session-player/login.html
-# https://<your-domain>/session-player/login.html
+# `https://<your-domain>/session-player/login.html`
 
 # 3. 按提示完成登录
 ```
