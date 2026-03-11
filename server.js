@@ -540,8 +540,13 @@ app.get(['/', '/session-player/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 播放器页面 - 支持两种路径
+// 播放器页面 - 支持两种路径模式（带分类目录）
 app.get(['/player/:filename', '/session-player/player/:filename'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'player.html'));
+});
+
+// 播放器页面 - 支持分类目录路径 /player/:category/:filename
+app.get(['/player/:category/:filename', '/session-player/player/:category/:filename'], (req, res) => {
     res.sendFile(path.join(__dirname, 'player.html'));
 });
 
