@@ -244,7 +244,7 @@ const handleGetRecording = (req, res) => {
     try {
         const filename = req.params.filename;
         
-        // 读取元数据查找文件实际位置
+        // 读取元数据查找文件位置
         let metadata = {};
         if (fs.existsSync(METADATA_PATH)) {
             metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
@@ -252,10 +252,37 @@ const handleGetRecording = (req, res) => {
         
         const fileMeta = metadata[filename];
         const category = fileMeta?.category || 'uncategorized';
-        const filePath = path.join(RECORDINGS_DIR, category, filename);
+        
+        // 优先从元数据记录的位置查找
+        let filePath = path.join(RECORDINGS_DIR, category, filename);
+        
+        // 如果找不到，尝试在 uncategorized 中查找
+        if (!fs.existsSync(filePath) && category !== 'uncategorized') {
+            const fallbackPath = path.join(RECORDINGS_DIR, 'uncategorized', filename);
+            if (fs.existsSync(fallbackPath)) {
+                filePath = fallbackPath;
+            }
+        }
+        
+        // 如果还找不到，扫描所有分类目录
+        if (!fs.existsSync(filePath)) {
+            const categories = fs.readdirSync(RECORDINGS_DIR)
+                .filter(item => {
+                    const itemPath = path.join(RECORDINGS_DIR, item);
+                    return fs.statSync(itemPath).isDirectory();
+                });
+            
+            for (const cat of categories) {
+                const tryPath = path.join(RECORDINGS_DIR, cat, filename);
+                if (fs.existsSync(tryPath)) {
+                    filePath = tryPath;
+                    break;
+                }
+            }
+        }
         
         if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ success: false, error: '文件不存在' });
+            return res.status(404).json({ success: false, error: `文件 "${filename}" 不存在` });
         }
         
         const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
