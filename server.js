@@ -351,6 +351,9 @@ const handleUpdateMetadata = (req, res) => {
             metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
         }
         
+        // 获取当前分类（用于移动文件）
+        const oldCategory = metadata[filename]?.category || 'uncategorized';
+        
         // 更新或创建元数据
         if (!metadata[filename]) {
             metadata[filename] = {
@@ -373,17 +376,29 @@ const handleUpdateMetadata = (req, res) => {
         }
         
         // 如果分类变更，需要移动文件
-        if (category && metadata[filename].category !== 'uncategorized') {
-            const targetDir = path.join(RECORDINGS_DIR, category);
+        const newCategory = category || 'uncategorized';
+        if (newCategory !== oldCategory) {
+            const sourceDir = path.join(RECORDINGS_DIR, oldCategory);
+            const targetDir = path.join(RECORDINGS_DIR, newCategory);
+            const sourcePath = path.join(sourceDir, filename);
+            const targetPath = path.join(targetDir, filename);
+            
+            // 确保目标目录存在
             if (!fs.existsSync(targetDir)) {
                 fs.mkdirSync(targetDir, { recursive: true });
             }
             
-            const oldPath = path.join(RECORDINGS_DIR, filename);
-            const newPath = path.join(targetDir, filename);
-            
-            if (fs.existsSync(oldPath)) {
-                fs.renameSync(oldPath, newPath);
+            // 检查源文件是否存在
+            if (fs.existsSync(sourcePath)) {
+                fs.renameSync(sourcePath, targetPath);
+            } else {
+                // 源文件不存在，尝试智能查找
+                const foundPath = findRecordingFile(filename);
+                if (foundPath) {
+                    // 从实际位置移动到目标位置
+                    fs.renameSync(foundPath, targetPath);
+                }
+                // 如果找不到文件，至少更新元数据（文件可能已被手动移动）
             }
         }
         
@@ -395,6 +410,32 @@ const handleUpdateMetadata = (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+// 辅助函数 - 智能查找文件
+function findRecordingFile(filename) {
+    const categories = ['uncategorized'];
+    
+    // 添加所有分类目录
+    if (fs.existsSync(RECORDINGS_DIR)) {
+        const items = fs.readdirSync(RECORDINGS_DIR);
+        items.forEach(item => {
+            const itemPath = path.join(RECORDINGS_DIR, item);
+            if (fs.statSync(itemPath).isDirectory() && !categories.includes(item)) {
+                categories.push(item);
+            }
+        });
+    }
+    
+    // 在所有分类中查找
+    for (const cat of categories) {
+        const tryPath = path.join(RECORDINGS_DIR, cat, filename);
+        if (fs.existsSync(tryPath)) {
+            return tryPath;
+        }
+    }
+    
+    return null;
+}
 
 // 通用处理函数 - 获取所有分类
 const handleGetCategories = (req, res) => {
@@ -475,25 +516,27 @@ const handleMoveRecording = (req, res) => {
             metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
         }
         
-        // 查找文件当前分类
+        // 查找文件当前分类（从元数据）
         const currentMeta = metadata[filename];
-        const currentCategory = currentMeta?.category || 'uncategorized';
+        const metaCategory = currentMeta?.category || 'uncategorized';
         
         // 如果目标分类相同，直接返回
-        if (targetCategory === currentCategory) {
+        if (targetCategory === metaCategory) {
             return res.json({ success: true, message: '文件已在目标分类中' });
         }
         
-        // 构建源路径和目标路径
-        const sourceDir = path.join(RECORDINGS_DIR, currentCategory);
-        const targetDir = path.join(RECORDINGS_DIR, targetCategory);
-        const sourcePath = path.join(sourceDir, filename);
-        const targetPath = path.join(targetDir, filename);
+        // 智能查找文件实际位置
+        let sourcePath = findRecordingFile(filename);
+        const actualCategory = sourcePath ? path.basename(path.dirname(sourcePath)) : metaCategory;
         
-        // 检查源文件是否存在
-        if (!fs.existsSync(sourcePath)) {
+        // 如果找不到文件，返回错误
+        if (!sourcePath) {
             return res.status(404).json({ success: false, error: '文件不存在' });
         }
+        
+        // 构建目标路径
+        const targetDir = path.join(RECORDINGS_DIR, targetCategory);
+        const targetPath = path.join(targetDir, filename);
         
         // 确保目标目录存在
         if (!fs.existsSync(targetDir)) {
@@ -532,7 +575,7 @@ const handleMoveRecording = (req, res) => {
             success: true, 
             message: `已移动到分类 "${targetCategory}"`,
             filename,
-            fromCategory: currentCategory,
+            fromCategory: actualCategory,
             toCategory: targetCategory
         });
     } catch (error) {
