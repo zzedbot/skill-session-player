@@ -1,0 +1,13 @@
+node_modules/
+*.log
+.DS_Store
+recordings/*.json
+!recordings/.gitkeep
+.env
+.env.local
+dist/
+build/
+*.tgz
+*.tar.gz
+config/config.json
+!config/config.example.json

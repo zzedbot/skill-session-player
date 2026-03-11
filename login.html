@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 登录 - Session Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .logo h1 {
+            color: #fff;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        }
+
+        .form-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            margin-top: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-error {
+            background: rgba(255, 80, 80, 0.15);
+            border: 1px solid rgba(255, 80, 80, 0.3);
+            color: #ff5050;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+
+        .alert-info {
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            color: #00d9ff;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .input-group .btn {
+            width: auto;
+            padding: 14px 20px;
+            white-space: nowrap;
+        }
+
+        .security-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: #ffc107;
+        }
+
+        .security-notice strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .countdown {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">🎬</div>
+            <h1>Session Player</h1>
+            <p>会话回放系统</p>
+        </div>
+
+        <!-- 步骤 1: 输入邮箱 -->
+        <div id="step-email">
+            <div class="alert alert-info" id="email-info">
+                ℹ️ 仅允许使用 geolle@163.com 登录
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="请输入邮箱"
+                    value="geolle@163.com"
+                >
+            </div>
+
+            <button class="btn btn-primary" onclick="sendCode()">
+                📧 获取验证码
+            </button>
+        </div>
+
+        <!-- 步骤 2: 输入验证码 -->
+        <div id="step-verify" class="hidden">
+            <div class="alert alert-success" id="code-sent">
+                ✅ 验证码已发送至 <strong id="email-display"></strong>
+            </div>
+
+            <div class="form-group">
+                <label for="code">验证码</label>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="code" 
+                        placeholder="请输入 6 位验证码"
+                        maxlength="6"
+                        pattern="[0-9]*"
+                        inputmode="numeric"
+                    >
+                    <button class="btn btn-secondary" onclick="resendCode()" id="resend-btn">
+                        重发
+                    </button>
+                </div>
+                <div class="countdown" id="countdown"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="verifyCode()">
+                🔐 登录
+            </button>
+
+            <button class="btn btn-secondary" onclick="backToEmail()">
+                ← 返回
+            </button>
+        </div>
+
+        <!-- 安全提示 -->
+        <div class="security-notice">
+            <strong>🔒 安全提示</strong>
+            <ul style="padding-left: 20px; margin: 8px 0;">
+                <li>验证码 5 分钟内有效</li>
+                <li>验证码仅限使用一次</li>
+                <li>不要将验证码分享给他人</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 自动检测 API 基础路径
+        function getApiBase() {
+            const path = window.location.pathname;
+            if (path.includes('/session-player/')) {
+                return '/session-player';
+            }
+            return '';
+        }
+
+        const API_BASE = getApiBase();
+
+        let currentEmail = '';
+        let countdownInterval = null;
+
+        function showAlert(message, type = 'error') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            
+            const container = document.querySelector('.login-container');
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        function showEmailStep() {
+            document.getElementById('step-email').classList.remove('hidden');
+            document.getElementById('step-verify').classList.add('hidden');
+        }
+
+        function showVerifyStep(email) {
+            currentEmail = email;
+            document.getElementById('step-email').classList.add('hidden');
+            document.getElementById('step-verify').classList.remove('hidden');
+            document.getElementById('email-display').textContent = email;
+            document.getElementById('code').value = '';
+            document.getElementById('code').focus();
+        }
+
+        async function sendCode() {
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email) {
+                showAlert('请输入邮箱地址');
+                return;
+            }
+
+            if (email !== 'geolle@163.com') {
+                showAlert('仅允许使用 geolle@163.com 登录', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/send-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showVerifyStep(email);
+                    startCountdown();
+                    showAlert('验证码已发送，请查收邮件', 'success');
+                } else {
+                    showAlert(data.message || '发送失败，请稍后重试', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        async function resendCode() {
+            if (countdownInterval) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/send-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentEmail })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('验证码已重新发送', 'success');
+                    startCountdown();
+                } else {
+                    showAlert(data.message || '发送失败，请稍后重试', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        async function verifyCode() {
+            const code = document.getElementById('code').value.trim();
+
+            if (!code) {
+                showAlert('请输入验证码');
+                return;
+            }
+
+            if (code.length !== 6) {
+                showAlert('验证码必须是 6 位数字');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentEmail, code })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 设置会话 cookie（HTTPS 需要 Secure 标志）
+                    document.cookie = `session_id=${data.sessionId}; path=${API_BASE || '/'}; max-age=604800; SameSite=Strict; Secure`;
+                    
+                    showAlert('登录成功，正在跳转...', 'success');
+                    setTimeout(() => {
+                        window.location.href = `${API_BASE}/`;
+                    }, 1000);
+                } else {
+                    showAlert(data.message || '验证码错误', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        function backToEmail() {
+            showEmailStep();
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        function startCountdown() {
+            let seconds = 60;
+            const countdownEl = document.getElementById('countdown');
+            const resendBtn = document.getElementById('resend-btn');
+            
+            resendBtn.disabled = true;
+            resendBtn.style.opacity = '0.5';
+            
+            updateCountdown();
+            
+            countdownInterval = setInterval(() => {
+                seconds--;
+                updateCountdown();
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    resendBtn.disabled = false;
+                    resendBtn.style.opacity = '1';
+                }
+            }, 1000);
+
+            function updateCountdown() {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                countdownEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} 后可重发`;
+            }
+        }
+
+        // 检查是否已登录
+        async function checkAuth() {
+            const sessionId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+            
+            if (sessionId) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/auth/check`, {
+                        headers: { 'Cookie': document.cookie }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.valid) {
+                        // 已登录，直接跳转到首页
+                        window.location.href = `${API_BASE}/`;
+                    }
+                } catch (error) {
+                    // 忽略错误，继续显示登录页面
+                }
+            }
+        }
+
+        // 初始化
+        checkAuth();
+
+        // 回车键提交
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter') {
+                const stepEmail = document.getElementById('step-email');
+                const stepVerify = document.getElementById('step-verify');
+                
+                if (!stepEmail.classList.contains('hidden')) {
+                    sendCode();
+                } else if (!stepVerify.classList.contains('hidden')) {
+                    verifyCode();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

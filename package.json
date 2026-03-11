@@ -1,0 +1,33 @@
+{
+  "name": "@zzedbot/openclaw-session-player",
+  "version": "1.0.0",
+  "description": "OpenClaw 会话回放 Web 播放器 - 将 JSONL 转录文件转换为可播放的聊天式界面",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "install": "chmod +x install.sh"
+  },
+  "keywords": [
+    "openclaw",
+    "session",
+    "player",
+    "recording",
+    "chat",
+    "replay",
+    "skill"
+  ],
+  "author": "Zed <zedbot@163.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zzedbot/openclaw-skills.git",
+    "directory": "skills/session-player"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

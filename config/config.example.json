@@ -1,0 +1,19 @@
+{
+  "email": {
+    "smtp": {
+      "host": "smtp.163.com",
+      "port": 465,
+      "secure": true,
+      "user": "your-email@163.com",
+      "pass": "your-smtp-password-here"
+    },
+    "allowedEmail": "allowed-email@example.com",
+    "from": "your-email@163.com"
+  },
+  "session": {
+    "expiryDays": 7
+  },
+  "verificationCode": {
+    "expiryMinutes": 5
+  }
+}
