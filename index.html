@@ -30,6 +30,29 @@
         .sidebar {
             width: 280px;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar .subtitle {
+            color: #888;
+            font-size: 0.9rem;
         }
 
         .sidebar-title {
@@ -125,11 +148,6 @@
         .main-content {
             flex: 1;
             min-width: 0;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
         }
 
         h1 {
@@ -647,10 +665,25 @@
 
             .sidebar {
                 width: 100%;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .sidebar header {
+                padding-bottom: 0;
+                border-bottom: none;
+                text-align: left;
+            }
+
+            .sidebar-title {
+                margin-left: auto;
             }
 
             .category-tree {
+                width: 100%;
                 max-height: 200px;
+                margin-top: 10px;
             }
         }
 
@@ -746,8 +779,14 @@
     </div>
     
     <div class="container">
-        <!-- 左侧边栏 - 分类树 -->
+        <!-- 左侧边栏 -->
         <aside class="sidebar">
+            <header>
+                <h1>📼 OpenClaw 会话录制库</h1>
+                <p class="subtitle">查看和回放你的 AI 会话记录</p>
+            </header>
+
+            <!-- 分类树 -->
             <div class="sidebar-title">
                 📁 分类
                 <button class="add-category-btn" onclick="openNewCategoryModal()" title="新建分类">+</button>
@@ -759,11 +798,6 @@
 
         <!-- 主内容区 -->
         <main class="main-content">
-            <header>
-                <h1>📼 OpenClaw 会话录制库</h1>
-                <p class="subtitle">查看和回放你的 AI 会话记录</p>
-            </header>
-
             <!-- 工具栏 -->
             <div class="toolbar">
                 <div class="search-box">
