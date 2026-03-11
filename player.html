@@ -568,6 +568,7 @@
         const filename = pathParts.pop(); // 最后一部分是文件名
         const category = pathParts.pop() || 'uncategorized'; // 倒数第二部分是分类
         
+        const roleConfig = {
             user: { 
                 icon: '👤', 
                 label: '你', 
