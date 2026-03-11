@@ -905,16 +905,30 @@
                 </span>
             `;
 
-            const interval = 1500 / speed;
+            const baseInterval = 1500 / speed;
 
-            playInterval = setInterval(() => {
+            const playStep = () => {
                 if (currentIndex < recording.messages.length) {
+                    // 检查当前消息是否在折叠组内
+                    const msgElement = document.querySelector(`[data-index="${currentIndex}"]`);
+                    const groupContainer = msgElement?.closest('.collapsible-group');
+                    const isInCollapsedGroup = groupContainer && collapsedGroups.has(groupContainer.id);
+                    
+                    // 如果在折叠组内，使用 2 倍速
+                    const currentInterval = isInCollapsedGroup ? baseInterval / 2 : baseInterval;
+                    
                     showMessage(currentIndex);
                     currentIndex++;
+                    
+                    // 重新设置定时器以支持动态变速
+                    clearInterval(playInterval);
+                    playInterval = setInterval(playStep, currentInterval);
                 } else {
                     pause();
                 }
-            }, interval);
+            };
+
+            playInterval = setInterval(playStep, baseInterval);
         }
 
         function pause() {
