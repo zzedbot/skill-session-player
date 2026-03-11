@@ -14,8 +14,9 @@
 ## 🔒 安全特性
 
 ### 1. 邮箱白名单
-- ✅ **仅允许** `geolle@163.com` 登录
+- ✅ **仅允许**配置的邮箱登录
 - ❌ 其他邮箱地址将被拒绝
+- ⚙️ 在 `config/config.json` 中配置 `email.allowedEmail`
 
 ### 2. 一次性验证码
 - 6 位数字验证码
@@ -47,13 +48,13 @@
 
 ### 步骤 2: 输入邮箱
 
-- 系统已预填充 `geolle@163.com`
+- 输入配置的邮箱地址（在 `config/config.json` 中）
 - 不允许修改为其他邮箱
 - 点击"📧 获取验证码"按钮
 
 ### 步骤 3: 查收邮件
 
-邮件将发送到 `geolle@163.com`，包含：
+邮件将发送到 `[REDACTED_EMAIL]`，包含：
 - 6 位数字验证码
 - 有效期说明（5 分钟）
 - 安全提示
@@ -221,7 +222,7 @@ npm start
 
 **检查步骤**:
 1. 检查垃圾邮件箱
-2. 确认邮箱地址正确（geolle@163.com）
+2. 确认邮箱地址正确（[REDACTED_EMAIL]）
 3. 查看服务器日志
 4. 检查 SMTP 配置
 
@@ -230,7 +231,7 @@ npm start
 # 测试邮件发送
 node -e "
 const auth = require('./auth');
-auth.sendVerificationCode('geolle@163.com')
+auth.sendVerificationCode('[REDACTED_EMAIL]')
     .then(() => console.log('✅ 发送成功'))
     .catch(err => console.error('❌ 发送失败:', err.message));
 "
@@ -280,9 +281,9 @@ auth.sendVerificationCode('geolle@163.com')
 
 ### 服务器日志示例
 ```
-✅ 验证码邮件已发送：geolle@163.com
-🔐 用户登录成功：geolle@163.com
-🚪 用户登出：geolle@163.com
+✅ 验证码邮件已发送：[REDACTED_EMAIL]
+🔐 用户登录成功：[REDACTED_EMAIL]
+🚪 用户登出：[REDACTED_EMAIL]
 ⚠️  验证码验证失败：验证码错误
 ⚠️  未授权访问：/api/recordings
 ```
@@ -325,7 +326,7 @@ npm start
 ```
 用户请求登录
     ↓
-输入邮箱（geolle@163.com）
+输入邮箱（[REDACTED_EMAIL]）
     ↓
 生成 6 位验证码
     ↓

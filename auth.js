@@ -1,6 +1,7 @@
 /**
  * Session Player 认证模块
- * 功能：邮箱验证码登录，仅允许 geolle@163.com
+ * 功能：邮箱验证码登录
+ * 配置：从 config/config.json 读取 allowedEmail
  */
 
 const crypto = require('crypto');
@@ -8,16 +9,26 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
 
+// 允许邮箱（从配置读取，如果配置不存在则使用空字符串）
+let ALLOWED_EMAIL = '';
+
 // 加载配置文件
 const configPath = path.join(__dirname, 'config', 'config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+let config = {};
 
-// 从配置读取
-const ALLOWED_EMAIL = config.email.allowedEmail;
-const SMTP_CONFIG = config.email.smtp;
-const FROM_EMAIL = config.email.from;
-const SESSION_EXPIRY_DAYS = config.session.expiryDays;
-const CODE_EXPIRY_MINUTES = config.verificationCode.expiryMinutes;
+try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    // 从配置读取
+    ALLOWED_EMAIL = config.email?.allowedEmail || '';
+} catch (error) {
+    console.warn('⚠️  读取配置文件失败，将不允许任何邮箱登录（需要配置 config/config.json）');
+}
+
+// 从配置读取其他配置项
+const SMTP_CONFIG = config.email?.smtp || {};
+const FROM_EMAIL = config.email?.from || '';
+const SESSION_EXPIRY_DAYS = config.session?.expiryDays || 7;
+const CODE_EXPIRY_MINUTES = config.verificationCode?.expiryMinutes || 5;
 
 // 内存存储验证码和会话（生产环境建议使用 Redis）
 const verificationCodes = new Map(); // email -> {code, expiresAt}

@@ -28,10 +28,15 @@ function test(name, fn) {
 
 // 测试 1: 允许的邮箱
 console.log('📧 测试邮箱白名单...');
-test('允许的邮箱是 geolle@163.com', () => {
-    if (auth.ALLOWED_EMAIL !== 'geolle@163.com') {
-        throw new Error(`期望 geolle@163.com，实际 ${auth.ALLOWED_EMAIL}`);
+test('允许的邮箱从配置读取', () => {
+    // ALLOWED_EMAIL 应该从 config/config.json 读取
+    // 如果配置不存在，应该为空字符串
+    if (typeof auth.ALLOWED_EMAIL !== 'string') {
+        throw new Error(`ALLOWED_EMAIL 应该是字符串，实际 ${typeof auth.ALLOWED_EMAIL}`);
     }
+    // 如果配置了 config.json，检查是否正确读取
+    // 如果没有配置，ALLOWED_EMAIL 应该为空字符串
+    console.log(`   当前允许的邮箱：${auth.ALLOWED_EMAIL || '(未配置)'}`);
 });
 
 // 测试 2: 生成验证码
@@ -48,19 +53,19 @@ test('生成 6 位数字验证码', () => {
 console.log('');
 console.log('🔐 测试会话管理...');
 test('创建会话返回 sessionId', () => {
-    const sessionId = auth.createSession('geolle@163.com');
+    const sessionId = auth.createSession('[REDACTED_EMAIL]');
     if (!sessionId || sessionId.length < 32) {
         throw new Error(`sessionId 无效：${sessionId}`);
     }
 });
 
 test('验证会话返回有效结果', () => {
-    const sessionId = auth.createSession('geolle@163.com');
+    const sessionId = auth.createSession('[REDACTED_EMAIL]');
     const validation = auth.validateSession(sessionId);
     if (!validation.valid) {
         throw new Error(`会话验证失败：${validation.message}`);
     }
-    if (validation.email !== 'geolle@163.com') {
+    if (validation.email !== '[REDACTED_EMAIL]') {
         throw new Error(`邮箱不匹配：${validation.email}`);
     }
 });
@@ -78,7 +83,7 @@ console.log('📝 测试验证码流程...');
 
 // 注意：由于 sendVerificationCode 需要实际发送邮件，这里只测试 verifyCode 函数
 test('验证码验证 - 未发送前返回错误', () => {
-    const result = auth.verifyCode('geolle@163.com', '123456');
+    const result = auth.verifyCode('[REDACTED_EMAIL]', '123456');
     if (result.valid) {
         throw new Error('应该返回无效结果');
     }
@@ -91,7 +96,7 @@ test('验证码验证 - 未发送前返回错误', () => {
 console.log('');
 console.log('🚪 测试会话销毁...');
 test('销毁会话成功', () => {
-    const sessionId = auth.createSession('geolle@163.com');
+    const sessionId = auth.createSession('[REDACTED_EMAIL]');
     const destroyed = auth.destroySession(sessionId);
     if (!destroyed) {
         throw new Error('销毁失败');

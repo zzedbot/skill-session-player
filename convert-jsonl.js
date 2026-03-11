@@ -6,10 +6,14 @@
 
 const fs = require('fs');
 const path = require('path');
+const Redactor = require('./lib/redactor');
 
 const SESSION_ID = process.argv[2] || 'ec0e11eb-be13-4cdb-b1fe-0dfb19f1d67f';
 const JSONL_PATH = `/root/.openclaw/agents/main/sessions/${SESSION_ID}.jsonl`;
 const OUTPUT_PATH = `/zed/workspace/recordings/recordings/${SESSION_ID}-full.json`;
+
+// 初始化脱敏器
+const redactor = new Redactor();
 
 console.log(`📖 读取 JSONL 文件：${JSONL_PATH}`);
 
@@ -146,16 +150,32 @@ if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
 }
 
-// 写入文件
+// 写入原版文件
 fs.writeFileSync(OUTPUT_PATH, JSON.stringify(recording, null, 2), 'utf8');
-console.log(`💾 已保存到：${OUTPUT_PATH}`);
+console.log(`💾 已保存到：${OUTPUT_PATH} (原版)`);
 console.log(`📊 文件大小：${fs.statSync(OUTPUT_PATH).size} bytes`);
 
-// 显示前几条消息预览
-console.log('\n📋 消息预览：');
-messages.slice(0, 5).forEach((msg, i) => {
-    const preview = msg.content?.substring(0, 50) || msg.toolName || msg.type;
-    console.log(`  ${i + 1}. [${msg.role}] ${preview}...`);
-});
+// 生成并写入脱敏版
+if (redactor.config.enabled) {
+    const redactedRecording = redactor.redactObject(recording);
+    const redactedPath = OUTPUT_PATH.replace('-full.json', '-redacted.json');
+    fs.writeFileSync(redactedPath, JSON.stringify(redactedRecording, null, 2), 'utf8');
+    console.log(`💾 已保存到：${redactedPath} (脱敏版)`);
+    console.log(`📊 文件大小：${fs.statSync(redactedPath).size} bytes`);
+    
+    // 显示脱敏统计
+    const originalText = JSON.stringify(recording, null, 2);
+    const redactedText = JSON.stringify(redactedRecording, null, 2);
+    const stats = redactor.getStats(originalText, redactedText);
+    
+    if (stats.replacements.length > 0) {
+        console.log(`\n🔒 脱敏统计:`);
+        stats.replacements.forEach(stat => {
+            console.log(`   - ${stat.rule}: ${stat.count} 处`);
+        });
+    }
+} else {
+    console.log(`\n⚠️  脱敏功能未启用（config/redact-rules.json 不存在或 enabled: false）`);
+}
 
 console.log('\n✅ 转换完成！');

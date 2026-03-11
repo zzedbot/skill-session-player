@@ -228,7 +228,7 @@
         <!-- 步骤 1: 输入邮箱 -->
         <div id="step-email">
             <div class="alert alert-info" id="email-info">
-                ℹ️ 仅允许使用 geolle@163.com 登录
+                ℹ️ 仅允许使用配置的邮箱登录
             </div>
 
             <div class="form-group">
@@ -237,7 +237,7 @@
                     type="email" 
                     id="email" 
                     placeholder="请输入邮箱"
-                    value="geolle@163.com"
+                    value=""
                 >
             </div>
 
@@ -341,10 +341,8 @@
                 return;
             }
 
-            if (email !== 'geolle@163.com') {
-                showAlert('仅允许使用 geolle@163.com 登录', 'error');
-                return;
-            }
+            // 邮箱验证由后端 API 处理（从 config.json 读取配置）
+            // 前端不硬编码允许的邮箱
 
             try {
                 const response = await fetch(`${API_BASE}/api/auth/send-code`, {

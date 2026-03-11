@@ -8,6 +8,18 @@ const PORT = process.env.PORT || 3000;
 const RECORDINGS_DIR = path.join(__dirname, 'recordings');
 const METADATA_PATH = path.join(RECORDINGS_DIR, 'metadata.json');
 
+// 加载配置文件
+const CONFIG_PATH = path.join(__dirname, 'config', 'config.json');
+let config = {};
+if (fs.existsSync(CONFIG_PATH)) {
+    try {
+        config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+        console.log('✅ 已加载配置文件 config/config.json');
+    } catch (error) {
+        console.warn('⚠️  读取配置文件失败，将使用默认配置');
+    }
+}
+
 // 确保录制目录存在
 if (!fs.existsSync(RECORDINGS_DIR)) {
     fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
@@ -49,13 +61,14 @@ app.use((req, res, next) => {
 app.post(['/api/auth/send-code', '/session-player/api/auth/send-code'], async (req, res) => {
     try {
         const { email } = req.body;
+        const allowedEmail = config.email?.allowedEmail || auth.ALLOWED_EMAIL || '';
 
         if (!email) {
             return res.status(400).json({ success: false, message: '请提供邮箱地址' });
         }
 
-        if (email !== auth.ALLOWED_EMAIL) {
-            return res.status(403).json({ success: false, message: '仅允许使用 geolle@163.com 登录' });
+        if (allowedEmail && email !== allowedEmail) {
+            return res.status(403).json({ success: false, message: `仅允许使用配置的邮箱登录` });
         }
 
         await auth.sendVerificationCode(email);
@@ -70,13 +83,14 @@ app.post(['/api/auth/send-code', '/session-player/api/auth/send-code'], async (r
 app.post(['/api/auth/verify', '/session-player/api/auth/verify'], (req, res) => {
     try {
         const { email, code } = req.body;
+        const allowedEmail = config.email?.allowedEmail || auth.ALLOWED_EMAIL || '';
 
         if (!email || !code) {
             return res.status(400).json({ success: false, message: '请提供邮箱和验证码' });
         }
 
-        if (email !== auth.ALLOWED_EMAIL) {
-            return res.status(403).json({ success: false, message: '仅允许使用 geolle@163.com 登录' });
+        if (allowedEmail && email !== allowedEmail) {
+            return res.status(403).json({ success: false, message: `仅允许使用配置的邮箱登录` });
         }
 
         const verification = auth.verifyCode(email, code);

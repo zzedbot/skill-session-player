@@ -1,21 +1,28 @@
 node_modules/
 *.log
 .DS_Store
-# 录制文件（包含敏感信息）
-recordings/uncategorized/*.json
+
+# 录制文件（全部不提交）
+recordings/*.json
 recordings/*/*.json
-
-# 元数据文件（运行时创建）
-recordings/metadata.json
-
-# 保留示例文件和占位符
-!recordings/metadata.example.json
+recordings/*/*/*.json
 !recordings/.gitkeep
+!recordings/metadata.example.json
+
+# 元数据（运行时创建）
+recordings/metadata.json
+!recordings/metadata.example.json
+
+# 配置文件
 .env
 .env.local
+config/config.json
+!config/config.example.json
+config/redact-rules.json
+!config/redact-rules.example.json
+
+# 构建产物
 dist/
 build/
 *.tgz
 *.tar.gz
-config/config.json
-!config/config.example.json
