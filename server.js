@@ -215,10 +215,38 @@ const handleDeleteRecording = (req, res) => {
     }
 };
 
+// 通用处理函数 - 重命名录制文件
+const handleRenameRecording = (req, res) => {
+    try {
+        const { filename, newName } = req.body;
+        
+        if (!filename || !newName) {
+            return res.status(400).json({ success: false, error: '请提供文件名和新名称' });
+        }
+        
+        const oldPath = path.join(RECORDINGS_DIR, filename);
+        const newPath = path.join(RECORDINGS_DIR, newName);
+        
+        if (!fs.existsSync(oldPath)) {
+            return res.status(404).json({ success: false, error: '文件不存在' });
+        }
+        
+        if (fs.existsSync(newPath)) {
+            return res.status(400).json({ success: false, error: '目标文件名已存在' });
+        }
+        
+        fs.renameSync(oldPath, newPath);
+        res.json({ success: true, message: `已重命名为 ${newName}` });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // API 路由 - 支持两种路径模式
 app.get(['/api/recordings', '/session-player/api/recordings'], handleRecordingsList);
 app.get(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleGetRecording);
 app.delete(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleDeleteRecording);
+app.put(['/api/recordings/rename', '/session-player/api/recordings/rename'], handleRenameRecording);
 
 // 主页 - 支持两种路径
 app.get(['/', '/session-player/'], (req, res) => {
