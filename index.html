@@ -19,9 +19,112 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 40px 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* ===== 左侧边栏 ===== */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .add-category-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 217, 255, 0.2);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            border-radius: 6px;
+            color: #00d9ff;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .add-category-btn:hover {
+            background: rgba(0, 217, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .category-tree {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: #aaa;
+        }
+
+        .category-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .category-item.active {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .category-item .category-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-item .category-count {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .category-tree::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .category-tree::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .category-tree::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* ===== 主内容区 ===== */
+        .main-content {
+            flex: 1;
+            min-width: 0;
         }
 
         header {
@@ -48,17 +151,17 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px 20px;
             margin-bottom: 30px;
             display: flex;
-            flex-wrap: wrap;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .search-box {
             flex: 1;
-            min-width: 250px;
+            min-width: 200px;
         }
 
         .search-box input {
@@ -79,7 +182,7 @@
         .filter-group {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            align-items: center;
         }
 
         .filter-item {
@@ -91,6 +194,7 @@
         .filter-item label {
             color: #888;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         .filter-item select {
@@ -113,6 +217,7 @@
             gap: 5px;
             cursor: pointer;
             user-select: none;
+            white-space: nowrap;
         }
 
         .checkbox-label input {
@@ -146,6 +251,11 @@
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
         }
 
         /* ===== 录制卡片网格 ===== */
@@ -530,6 +640,20 @@
         }
 
         /* ===== 响应式设计 ===== */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .category-tree {
+                max-height: 200px;
+            }
+        }
+
         @media (max-width: 768px) {
             .toolbar {
                 flex-direction: column;
@@ -622,64 +746,132 @@
     </div>
     
     <div class="container">
-        <header>
-            <h1>📼 OpenClaw 会话录制库</h1>
-            <p class="subtitle">查看和回放你的 AI 会话记录</p>
-        </header>
-
-        <!-- 工具栏 -->
-        <div class="toolbar">
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="🔍 搜索会话..." onkeyup="handleSearch(event)">
+        <!-- 左侧边栏 - 分类树 -->
+        <aside class="sidebar">
+            <div class="sidebar-title">
+                📁 分类
+                <button class="add-category-btn" onclick="openNewCategoryModal()" title="新建分类">+</button>
             </div>
-            
-            <div class="filter-group">
-                <div class="filter-item">
-                    <label>📁 分类:</label>
-                    <select id="filter-category" onchange="loadRecordings()">
-                        <option value="all">全部分类</option>
-                    </select>
-                </div>
-                
-                <div class="filter-item">
-                    <label>🏷️ 标签:</label>
-                    <select id="filter-tag" onchange="loadRecordings()">
-                        <option value="all">全部标签</option>
-                    </select>
-                </div>
-                
-                <div class="filter-item">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="filter-starred" onchange="loadRecordings()">
-                        ⭐ 仅星标
-                    </label>
-                </div>
-                
-                <button class="btn btn-secondary" onclick="openNewCategoryModal()">+ 新建分类</button>
+            <div class="category-tree" id="category-tree">
+                <div class="loading" style="padding: 20px; text-align: center;">加载中...</div>
             </div>
-        </div>
+        </aside>
 
-        <div id="recordings-grid" class="recordings-grid">
-            <div class="loading">正在加载录制文件...</div>
-        </div>
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header>
+                <h1>📼 OpenClaw 会话录制库</h1>
+                <p class="subtitle">查看和回放你的 AI 会话记录</p>
+            </header>
+
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="🔍 搜索会话..." onkeyup="handleSearch(event)">
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label>🏷️ 标签:</label>
+                        <select id="filter-tag" onchange="loadRecordings()">
+                            <option value="all">全部标签</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filter-starred" onchange="loadRecordings()">
+                            ⭐ 仅星标
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recordings-grid" class="recordings-grid">
+                <div class="loading">正在加载录制文件...</div>
+            </div>
+        </main>
     </div>
 
     <script>
         let currentEditFilename = null;
         let currentTags = [];
+        let currentCategory = 'all'; // 当前选中的分类
+
+        // ===== 加载分类树 =====
+        async function loadCategoryTree() {
+            try {
+                const res = await fetch('/session-player/api/categories');
+                const data = await res.json();
+                const categories = data.categories || [];
+                
+                const tree = document.getElementById('category-tree');
+                
+                // 统计每个分类的文件数量
+                const counts = {};
+                categories.forEach(cat => counts[cat] = 0);
+                counts['uncategorized'] = 0;
+                
+                // 从当前加载的录制中统计
+                const recordings = window.currentRecordings || [];
+                recordings.forEach(rec => {
+                    const cat = rec.category || 'uncategorized';
+                    if (counts[cat] !== undefined) counts[cat]++;
+                });
+                
+                // 渲染分类树
+                let html = `
+                    <div class="category-item ${currentCategory === 'all' ? 'active' : ''}" onclick="selectCategory('all')">
+                        <span class="category-name">📊 全部分类</span>
+                        <span class="category-count">${recordings.length}</span>
+                    </div>
+                `;
+                
+                // 未分类
+                html += `
+                    <div class="category-item ${currentCategory === 'uncategorized' ? 'active' : ''}" onclick="selectCategory('uncategorized')">
+                        <span class="category-name">📁 未分类</span>
+                        <span class="category-count">${counts['uncategorized'] || 0}</span>
+                    </div>
+                `;
+                
+                // 用户分类
+                categories.forEach(cat => {
+                    if (cat !== 'uncategorized') {
+                        html += `
+                            <div class="category-item ${currentCategory === cat ? 'active' : ''}" onclick="selectCategory('${cat}')">
+                                <span class="category-name">📁 ${escapeHtml(cat)}</span>
+                                <span class="category-count">${counts[cat] || 0}</span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                tree.innerHTML = html;
+                
+            } catch (error) {
+                console.error('加载分类树失败:', error);
+            }
+        }
+
+        // ===== 选择分类 =====
+        function selectCategory(category) {
+            currentCategory = category;
+            loadCategoryTree(); // 重新渲染树（更新选中状态）
+            loadRecordings();   // 加载对应分类的录制
+        }
 
         // ===== 加载录制列表 =====
         async function loadRecordings() {
             const grid = document.getElementById('recordings-grid');
             grid.innerHTML = '<div class="loading">正在加载录制文件...</div>';
 
-            const category = document.getElementById('filter-category').value;
             const tag = document.getElementById('filter-tag').value;
             const starred = document.getElementById('filter-starred').checked;
 
             try {
                 const params = new URLSearchParams();
-                if (category !== 'all') params.append('category', category);
+                if (currentCategory !== 'all') params.append('category', currentCategory);
                 if (tag !== 'all') params.append('tag', tag);
                 if (starred) params.append('starred', 'true');
 
@@ -691,11 +883,14 @@
                         <div class="empty-state">
                             <div class="empty-state-icon">📼</div>
                             <h2>暂无录制文件</h2>
-                            <p>会话录制将显示在这里</p>
+                            <p>${currentCategory !== 'all' ? `分类 "${currentCategory}" 中没有文件` : '会话录制将显示在这里'}</p>
                         </div>
                     `;
                     return;
                 }
+
+                // 保存当前录制列表用于统计
+                window.currentRecordings = data.recordings;
 
                 grid.innerHTML = data.recordings.map(rec => `
                     <div class="recording-card ${rec.starred ? 'starred' : ''}">
@@ -719,8 +914,10 @@
                     </div>
                 `).join('');
 
-                // 加载分类和标签筛选器
+                // 加载标签筛选器
                 loadFilters();
+                // 更新分类树统计
+                loadCategoryTree();
 
             } catch (error) {
                 grid.innerHTML = `
@@ -736,19 +933,6 @@
         // ===== 加载筛选器选项 =====
         async function loadFilters() {
             try {
-                // 加载分类
-                const catRes = await fetch('/session-player/api/categories');
-                const catData = await catRes.json();
-                const catSelect = document.getElementById('filter-category');
-                const currentCat = catSelect.value;
-                
-                catSelect.innerHTML = '<option value="all">全部分类</option>' +
-                    (catData.categories || []).map(c => 
-                        `<option value="${c}">${c}</option>`
-                    ).join('');
-                
-                catSelect.value = currentCat;
-
                 // 加载标签
                 const tagRes = await fetch('/session-player/api/tags');
                 const tagData = await tagRes.json();
@@ -811,9 +995,10 @@
                 const catRes = await fetch('/session-player/api/categories');
                 const catData = await catRes.json();
                 const catSelect = document.getElementById('edit-category');
-                catSelect.innerHTML = (catData.categories || []).map(c => 
-                    `<option value="${c}">${c}</option>`
-                ).join('');
+                catSelect.innerHTML = '<option value="uncategorized">uncategorized</option>' +
+                    (catData.categories || []).filter(c => c !== 'uncategorized').map(c => 
+                        `<option value="${c}">${c}</option>`
+                    ).join('');
                 catSelect.value = category;
 
                 const modal = document.getElementById('edit-modal');
@@ -972,6 +1157,7 @@
         }
 
         // ===== 初始化 =====
+        loadCategoryTree();
         loadRecordings();
     </script>
 </body>
