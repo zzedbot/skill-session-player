@@ -379,8 +379,11 @@
                 return;
             }
 
+            // 自动检测 API 路径
+            const apiBase = window.location.pathname.includes('/session-player/') ? '/session-player' : '';
+
             try {
-                const response = await fetch('/session-player/api/recordings/rename', {
+                const response = await fetch(`${apiBase}/api/recordings/rename`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
