@@ -246,7 +246,10 @@ const handleRenameRecording = (req, res) => {
 app.get(['/api/recordings', '/session-player/api/recordings'], handleRecordingsList);
 app.get(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleGetRecording);
 app.delete(['/api/recordings/:filename', '/session-player/api/recordings/:filename'], handleDeleteRecording);
-app.put(['/api/recordings/rename', '/session-player/api/recordings/rename'], handleRenameRecording);
+
+// 重命名 API - 分开定义两个路由
+app.put('/api/recordings/rename', handleRenameRecording);
+app.put('/session-player/api/recordings/rename', handleRenameRecording);
 
 // 主页 - 支持两种路径
 app.get(['/', '/session-player/'], (req, res) => {
