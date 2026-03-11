@@ -915,15 +915,16 @@
                     return;
                 }
 
-                // 检查当前消息是否在折叠组内
+                // 检查当前消息是否属于可折叠的助手组（无论当前是否展开）
                 const msgElement = document.querySelector(`[data-index="${currentIndex}"]`);
                 const groupContainer = msgElement?.closest('.collapsible-group');
-                const isInCollapsedGroup = groupContainer && collapsedGroups.has(groupContainer.id);
+                // 只要是可折叠的组（有多个消息），就使用 2 倍速
+                const isFastForwardGroup = groupContainer !== null;
                 
-                // 如果在折叠组内，使用 2 倍速
-                const currentInterval = isInCollapsedGroup ? baseInterval / 2 : baseInterval;
+                // 如果在可折叠组内，使用 2 倍速
+                const currentInterval = isFastForwardGroup ? baseInterval / 2 : baseInterval;
                 
-                console.log(`[播放] index=${currentIndex}, 折叠组=${isInCollapsedGroup}, 间隔=${currentInterval}ms`);
+                console.log(`[播放] index=${currentIndex}, 可折叠组=${isFastForwardGroup}, 间隔=${currentInterval}ms`);
                 
                 showMessage(currentIndex);
                 currentIndex++;
