@@ -439,6 +439,15 @@
             color: #ffd700;
         }
 
+        .redacted-badge {
+            position: absolute;
+            top: 15px;
+            right: 45px;
+            font-size: 1.2rem;
+            color: #00ff88;
+            cursor: help;
+        }
+
         .recording-name {
             font-size: 1.2rem;
             font-weight: 600;
@@ -967,6 +976,11 @@
             <header>
                 <h1>📼 OpenClaw 会话录制库</h1>
                 <p class="subtitle">查看和回放你的 AI 会话记录</p>
+                <div style="margin-top: 15px;">
+                    <a href="/session-player/preview" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 15px;">
+                        🔍 脱敏预览
+                    </a>
+                </div>
             </header>
 
             <!-- 分类树 -->
@@ -1138,6 +1152,7 @@
                          data-category="${rec.category || 'uncategorized'}"
                          ondragstart="handleDragStart(event, '${rec.filename}', '${rec.category || 'uncategorized'}')">
                         ${rec.starred ? '<span class="star-badge">⭐</span>' : ''}
+                        ${rec.redactedVersion ? '<span class="redacted-badge" title="有脱敏版本">🔒</span>' : ''}
                         <div class="recording-name">${escapeHtml(rec.name)}</div>
                         <div class="recording-meta">
                             <span class="meta-item category-tag">📁 ${rec.category || 'uncategorized'}</span>
@@ -1152,6 +1167,11 @@
                         ${rec.note ? `<div class="recording-note">📝 ${escapeHtml(rec.note)}</div>` : ''}
                         <div class="card-actions">
                             <a href="/session-player/player/${rec.category || 'uncategorized'}/${rec.filename}" class="action-btn primary">▶️ 播放</a>
+                            ${rec.redactedVersion ? `
+                                <button class="action-btn" onclick="shareRecording('${rec.redactedVersion}')" title="分享脱敏版">
+                                    🔗 分享
+                                </button>
+                            ` : ''}
                             <button class="action-btn" onclick="openEditModal('${rec.filename}')">✏️ 编辑</button>
                         </div>
                     </div>
@@ -1546,6 +1566,21 @@
             
             draggedFilename = null;
             draggedCategory = null;
+        }
+
+        // 分享脱敏版
+        async function shareRecording(redactedFilename) {
+            try {
+                // 生成分享链接
+                const shareUrl = `${window.location.origin}/session-player/player/uncategorized/${redactedFilename}?version=redacted`;
+                
+                // 复制到剪贴板
+                await navigator.clipboard.writeText(shareUrl);
+                
+                showToast('分享链接已复制到剪贴板！', 'success');
+            } catch (error) {
+                showToast('复制失败：' + error.message, 'error');
+            }
         }
 
         // 全局拖拽结束事件（清理）

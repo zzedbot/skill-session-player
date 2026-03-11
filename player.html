@@ -133,6 +133,26 @@
             gap: 15px;
         }
 
+        .toolbar-right select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d9ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        .toolbar-right select:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
         .playing-indicator {
             display: inline-flex;
             align-items: center;
@@ -621,6 +641,10 @@
 
         <div class="toolbar-right">
             <div id="playing-status"></div>
+            <select class="control-btn" id="version-selector" onchange="switchVersion(this.value)" style="margin-left: 10px; min-width: 100px;">
+                <option value="full">📄 原版</option>
+                <option value="redacted">🔒 脱敏版</option>
+            </select>
         </div>
     </div>
 
@@ -643,6 +667,14 @@
         let playInterval = null;
         let speed = 1;
         let collapsedGroups = new Set(); // 记录折叠的组 ID
+        let currentVersion = 'full'; // 当前版本：full 或 redacted
+        
+        // 从 URL 参数读取版本
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('version') === 'redacted') {
+            currentVersion = 'redacted';
+            document.getElementById('version-selector').value = 'redacted';
+        }
 
         // 自动检测 API 基础路径
         function getApiBase() {
@@ -705,8 +737,13 @@
                     throw new Error(`文件 "${filename}" 不存在`);
                 }
 
+                // 根据版本选择文件
+                const loadFilename = currentVersion === 'redacted' && recordingData.redactedVersion 
+                    ? recordingData.redactedVersion 
+                    : filename;
+                
                 // 从实际文件加载完整内容
-                const fileResponse = await fetch(`${API_BASE}/api/recordings/${filename}`);
+                const fileResponse = await fetch(`${API_BASE}/api/recordings/${loadFilename}`);
                 const fileData = await fileResponse.json();
                 
                 if (!fileData.success) {
@@ -715,7 +752,8 @@
 
                 recording = fileData.recording;
                 const title = recording.recordingInfo?.title || recordingData.name || filename.replace('.json', '');
-                document.getElementById('page-title').textContent = `🎬 ${title}`;
+                const versionTag = currentVersion === 'redacted' ? ' (脱敏版)' : '';
+                document.getElementById('page-title').textContent = `🎬 ${title}${versionTag}`;
                 renderMessages();
 
             } catch (error) {
@@ -728,6 +766,25 @@
                     </div>
                 `;
             }
+        }
+        
+        // 切换版本
+        function switchVersion(version) {
+            if (version === currentVersion) return;
+            
+            currentVersion = version;
+            
+            // 更新 URL 参数
+            const url = new URL(window.location);
+            if (version === 'redacted') {
+                url.searchParams.set('version', 'redacted');
+            } else {
+                url.searchParams.delete('version');
+            }
+            window.history.pushState({}, '', url);
+            
+            // 重新加载录制
+            loadRecording();
         }
 
         function renderMessages() {

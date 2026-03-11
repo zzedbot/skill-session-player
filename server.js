@@ -634,6 +634,11 @@ app.get(['/player/:category/:filename', '/session-player/player/:category/:filen
     res.sendFile(path.join(__dirname, 'player.html'));
 });
 
+// 预览页面
+app.get(['/preview', '/session-player/preview'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'preview.html'));
+});
+
 // 登录页面 - 支持两种路径（公开访问）
 app.get(['/login.html', '/session-player/login.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
