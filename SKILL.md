@@ -1,6 +1,6 @@
 # 🎬 OpenClaw Session Player - 会话回放技能
 
-将会话历史转换为可播放的 Web 应用，支持 1:1 完整回放、聊天式界面、倍速播放等功能。
+将会话历史转换为可播放的 Web 应用，支持分类管理、Markdown 渲染、倍速播放等功能。
 
 ---
 
@@ -12,6 +12,8 @@
 - 将 OpenClaw 会话 JSONL 转录文件转换为 Web 可播放格式
 - 创建完整的录制文件（包含思考过程、工具调用、API 响应）
 - 提供美观的聊天式播放界面
+- 支持分类管理、标签系统、拖拽移动
+- 支持 Markdown 渲染、倍速播放、全部加载
 - 支持 HTTPS 访问（通过 Nginx 代理）
 
 **适用场景**:
@@ -50,10 +52,10 @@ npm install
 node convert-jsonl.js <session-id>
 
 # 示例：转换指定会话
-node convert-jsonl.js 1489ec21-0b89-4cf4-8d01-223ea2f93c76
+node convert-jsonl.js ec0e11eb-be13-4cdb-b1fe-0dfb19f1d67f
 ```
 
-### 3. 启动服务器
+### 4. 启动服务器
 
 ```bash
 npm start
@@ -61,7 +63,7 @@ npm start
 
 服务器将在 `http://localhost:3000` 启动。
 
-### 4. 配置 Nginx（可选，用于 HTTPS）
+### 5. 配置 Nginx（可选，用于 HTTPS）
 
 编辑 Nginx 配置文件 `/etc/nginx/sites-available/<your-domain>`：
 
@@ -91,44 +93,68 @@ location /session-player/ {
 
 ```
 session-player/
-├── SKILL.md               # 技能文档（本文件）
-├── convert-jsonl.js       # JSONL 转换器
-├── server.js              # Express 服务器
-├── index.html             # 录制库首页
-├── player.html            # 会话播放器
-├── package.json           # 项目配置
-├── recordings/            # 录制文件存储目录 ⭐
-│   └── *.json             # 录制的会话文件
-└── README.md              # 使用说明
+├── SKILL.md                      # 技能文档（本文件）
+├── convert-jsonl.js              # JSONL 转换器
+├── server.js                     # Express 服务器
+├── index.html                    # 录制库首页（带分类树）
+├── player.html                   # 会话播放器（Markdown 渲染）
+├── package.json                  # 项目配置
+├── recordings/                   # 录制文件存储目录 ⭐
+│   ├── metadata.json            # 元数据（运行时创建，不提交）
+│   ├── metadata.example.json    # 元数据示例（已提交）
+│   ├── .gitkeep                 # 目录占位符
+│   ├── uncategorized/           # 未分类目录
+│   │   └── *.json               # 录制文件
+│   └── <category>/              # 用户自定义分类
+│       └── *.json               # 录制文件
+├── config/
+│   ├── config.example.json      # SMTP 配置示例
+│   └── .gitignore               # 真实配置不提交
+├── auth.js                       # 邮箱验证码认证
+├── login.html                    # 登录页面
+└── README.md                     # 使用说明
 ```
-
-> ⚠️ **重要**: 录制文件必须存放在 `skills/session-player/recordings/` 目录内，符合工作空间规范。
 
 ---
 
 ## 🎮 功能特性
 
 ### 录制库首页
-- 📋 查看所有录制文件列表
-- 📊 显示元数据（时间、模型、消息数）
-- 🎯 点击卡片进入播放器
+
+| 功能 | 说明 |
+|------|------|
+| 📋 录制列表 | 卡片式展示，显示标题、分类、标签、备注 |
+| 📁 分类树 | 左侧树形导航，显示每个分类的文件数量 |
+| 🏷️ 标签筛选 | 按标签筛选录制文件 |
+| ⭐ 星标筛选 | 只看星标会话 |
+| 🔍 搜索 | 全文搜索（标题、备注、标签） |
+| ➕ 新建分类 | 创建自定义分类目录 |
+| 🖱️ 拖拽移动 | 拖动卡片到分类树修改分类 |
 
 ### 会话播放器
-- ▶️ **播放/暂停** - 自动逐条展示消息
-- ⏩ **倍速控制** - 0.5x / 1x / 2x / 5x
-- ⏭️ **跳过** - 快速前进 5 条消息
-- ⏮️ **重置** - 从头开始
-- 📊 **进度条** - 实时显示播放进度
-- ⌨️ **键盘快捷键**:
-  - `Space` - 播放/暂停
-  - `R` - 重置
-  - `→` - 跳过
 
-### 聊天式界面
-- 👤 **用户消息** - 右侧蓝色气泡
-- 🤖 **助手回复** - 左侧默认气泡
-- 🔧 **工具调用** - 左侧黄色气泡（带工具标签）
-- 💭 **思考内容** - 居中半透明气泡（虚线边框）
+| 功能 | 说明 |
+|------|------|
+| ▶️ 播放/暂停 | 自动逐条展示消息 |
+| ⏩ 全部加载 | 一键展示整个会话 |
+| ⏩ 倍速控制 | 0.5x / 1x / 2x / 5x |
+| ⏭️ 跳过 | 快速前进 5 条消息 |
+| 📊 进度条 | 实时显示播放进度 |
+| ⌨️ 快捷键 | Space 播放/暂停，R 重置，L 全部加载 |
+| 📝 Markdown | 助手回复支持 Markdown 渲染 |
+| 🗂️ 折叠组 | 思考 + 工具调用自动折叠，3 倍速播放 |
+
+### 分类管理系统
+
+| 功能 | 说明 |
+|------|------|
+| 📁 文件夹分类 | 物理隔离，每个分类独立目录 |
+| 🏷️ 标签系统 | 支持多标签，灵活标记 |
+| 📝 自定义标题 | 为会话设置友好名称 |
+| 📋 备注功能 | 添加会话备注信息 |
+| ⭐ 星标功能 | 标记重要会话 |
+| 🖱️ 拖拽移动 | 拖动卡片到分类树修改分类 |
+| ✏️ 编辑对话框 | 统一编辑所有元数据 |
 
 ---
 
@@ -141,48 +167,71 @@ http://localhost:3000/
 
 ### 互联网访问（配置 Nginx 后）
 ```
-`https://<your-domain>/session-player/`
+https://<your-domain>/session-player/
 ```
 
 ---
 
 ## 📝 录制文件格式
 
+### 源文件（JSONL）
+OpenClaw 原始会话文件位于：
+```
+/root/.openclaw/agents/main/sessions/<session-id>.jsonl
+```
+
+### 转换后格式（JSON）
 ```json
 {
   "recordingInfo": {
-    "sessionId": "1489ec21-0b89-4cf4-8d01-223ea2f93c76",
+    "sessionId": "ec0e11eb-be13-4cdb-b1fe-0dfb19f1d67f",
     "sessionKey": "agent:main:main",
-    "recordedAt": "2026-03-04T03:53:21.388Z",
+    "recordedAt": "2026-03-11T00:00:00.000Z",
     "channel": "webchat",
     "model": "qwen3.5-plus",
     "provider": "bailian",
-    "title": "完整会话录制 - 1489ec21",
+    "title": "完整会话录制 - ec0e11eb",
     "description": "1:1 完整转录，包含所有思考过程和工具调用",
     "totalMessages": 1243,
-    "sourceFile": "/root/.openclaw/agents/main/sessions/1489ec21-0b89-4cf4-8d01-223ea2f93c76.jsonl",
+    "sourceFile": "/root/.openclaw/agents/main/sessions/ec0e11eb.jsonl",
     "sourceFileSize": 1587757
   },
   "messages": [
     {
       "role": "user",
       "content": "汇总销售日报",
-      "timestamp": "2026-03-04T03:53:21.388Z"
+      "timestamp": "2026-03-11T00:00:00.000Z"
     },
     {
       "role": "assistant",
       "type": "thinking",
       "content": "用户想要汇总销售日报...",
-      "timestamp": "2026-03-04T03:53:21.390Z"
+      "timestamp": "2026-03-11T00:00:00.001Z"
     },
     {
       "role": "assistant",
       "type": "toolCall",
       "toolName": "sessions_list",
       "content": "🔧 调用工具：**sessions_list**",
-      "timestamp": "2026-03-04T03:53:21.390Z"
+      "timestamp": "2026-03-11T00:00:00.001Z"
     }
   ]
+}
+```
+
+### 元数据格式（metadata.json）
+```json
+{
+  "ec0e11eb-full.json": {
+    "originalFilename": "ec0e11eb-full.json",
+    "customTitle": "销售日报汇总",
+    "category": "work",
+    "tags": ["销售", "日报", "重要"],
+    "note": "每日销售数据汇总，需要定期查看",
+    "starred": true,
+    "createdAt": "2026-03-11T00:00:00.000Z",
+    "updatedAt": "2026-03-11T12:00:00.000Z"
+  }
 }
 ```
 
@@ -192,32 +241,43 @@ http://localhost:3000/
 
 | 端点 | 方法 | 描述 |
 |------|------|------|
-| `/api/recordings` | GET | 获取所有录制文件列表 |
+| `/api/recordings` | GET | 获取录制列表（支持分类/标签筛选） |
 | `/api/recordings/:filename` | GET | 获取单个录制文件内容 |
-| `/` | GET | 录制库首页 |
-| `/player/:filename` | GET | 会话播放器页面 |
+| `/api/recordings/:filename/metadata` | PUT | 更新元数据（标题/分类/标签/备注/星标） |
+| `/api/recordings/:filename/move` | PUT | 移动文件到另一个分类 |
+| `/api/recordings/rename` | PUT | 重命名录制文件 |
+| `/api/categories` | GET | 获取所有分类 |
+| `/api/categories` | POST | 创建新分类 |
+| `/api/tags` | GET | 获取所有标签 |
+| `/api/auth/send-code` | POST | 发送验证码 |
+| `/api/auth/verify` | POST | 验证登录 |
+| `/api/auth/check` | GET | 检查会话状态 |
+| `/api/auth/logout` | POST | 登出 |
 
 ---
 
 ## 🛠️ 技术栈
 
-- **后端**: Node.js + Express
-- **前端**: 原生 HTML/CSS/JavaScript
-- **样式**: 渐变背景、卡片布局、动画效果
-- **播放**: 定时消息展示、进度跟踪
-- **代理**: Nginx (HTTPS/HTTP2)
+| 层级 | 技术 |
+|------|------|
+| **后端** | Node.js + Express |
+| **前端** | 原生 HTML/CSS/JavaScript |
+| **认证** | 邮箱验证码（SMTP） |
+| **Markdown** | marked.js（CDN） |
+| **样式** | 渐变背景、卡片布局、动画效果 |
+| **代理** | Nginx (HTTPS/HTTP2) |
 
 ---
 
-## 📋 消息类型
+## 📋 消息类型与渲染
 
-| 类型 | 角色 | 位置 | 样式 |
-|------|------|------|------|
-| `user` | 用户 | 右侧 | 蓝色渐变气泡 |
-| `assistant/thinking` | 助手思考 | 左侧 | 灰色半透明 |
-| `assistant/toolCall` | 工具调用 | 左侧 | 黄色调，带工具标签 |
-| `assistant/text` | 普通回复 | 左侧 | 默认背景 |
-| `tool` | 工具结果 | 左侧 | 黄色调，较小气泡 |
+| 类型 | 角色 | 渲染方式 | 样式 |
+|------|------|---------|------|
+| `user` | 用户 | 纯文本（转义） | 右侧蓝色气泡 |
+| `assistant/thinking` | 助手思考 | 纯文本（转义） | 居中灰色半透明 |
+| `assistant/toolCall` | 工具调用 | Markdown 渲染 | 左侧黄色调，带工具标签 |
+| `assistant/text` | 普通回复 | **Markdown 渲染** | 左侧默认背景 |
+| `tool` | 工具结果 | Markdown 渲染 | 左侧黄色调，较小气泡 |
 
 ---
 
@@ -234,13 +294,13 @@ ls -lt /root/.openclaw/agents/main/sessions/*.jsonl | head -5
 
 ```bash
 # 1. 转换会话
-node convert-jsonl.js 1489ec21-0b89-4cf4-8d01-223ea2f93c76
+node convert-jsonl.js ec0e11eb-be13-4cdb-b1fe-0dfb19f1d67f
 
 # 2. 启动服务器
 npm start
 
 # 3. 访问播放器
-# http://localhost:3000/player/1489ec21-0b89-4cf4-8d01-223ea2f93c76-full.json
+# http://localhost:3000/session-player/player/uncategorized/ec0e11eb-full.json
 ```
 
 ### 批量转换
@@ -264,51 +324,63 @@ done
 | `PORT` | 3000 | 服务器监听端口 |
 | `RECORDINGS_DIR` | `./recordings` | 录制文件存储目录 |
 
-### 转换选项
+### SMTP 配置（config/config.json）
 
-在 `convert-jsonl.js` 中可配置：
+```json
+{
+  "smtp": {
+    "host": "smtp.163.com",
+    "port": 465,
+    "secure": true,
+    "auth": {
+      "user": "your-email@163.com",
+      "pass": "your-smtp-password"
+    },
+    "from": "your-email@163.com"
+  },
+  "allowedEmail": "your-email@163.com"
+}
+```
 
-- 消息内容截断长度（默认 500 字符）
-- 时间戳格式
-- 元数据清理规则
-
----
-
-## 📍 工作空间规范
-
-根据 `WORKSPACE_GUIDE.md` 要求：
-
-| 规则 | 说明 |
-|------|------|
-| **录制文件位置** | 必须存放在 `skills/session-player/recordings/` |
-| **禁止符号链接** | 不使用符号链接指向其他目录 |
-| **数据隔离** | 每个技能的数据存放在各自目录内 |
-| **敏感信息** | 录制文件可能包含敏感信息，不要提交到 Git |
+> ⚠️ **安全提示**: 真实配置文件已在 `.gitignore` 中，不会被提交。
 
 ---
 
 ## 🔍 故障排查
 
-### 问题 1：播放器显示"暂无录制文件"
+### 问题 1：播放器显示"文件不存在"
 
-**原因**: 录制文件未存放在正确目录
+**原因**: 文件位置与元数据记录不一致
 
 **解决**: 
 ```bash
-# 确认文件位置
-ls -la /zed/workspace/skills/session-player/recordings/
-
-# 如果文件在其他位置，移动到正确位置
-mv /path/to/recording.json /zed/workspace/skills/session-player/recordings/
+# 智能查找会自动扫描所有分类目录
+# 如果还是找不到，检查文件实际位置
+ls -la recordings/uncategorized/
+ls -la recordings/<category>/
 ```
 
-### 问题 2：播放器显示"加载失败"
+### 问题 2：拖拽移动失败
 
-**原因**: API 路径配置错误
+**原因**: 服务器未重启或路由未更新
 
-**解决**: 检查 `player.html` 中的 API 请求路径是否正确
+**解决**:
+```bash
+# 重启服务器
+pkill -f "node server.js"
+npm start
+```
 
-### 问题 3：Nginx 代理返回 404
+### 问题 3：Markdown 没有渲染
+
+**原因**: marked.js 未加载
+
+**解决**:
+- 检查网络连接（CDN 依赖）
+- 刷新页面
+- 检查浏览器控制台错误
+
+### 问题 4：Nginx 代理返回 404
 
 **原因**: location 配置缺少末尾斜杠
 
@@ -320,7 +392,7 @@ location /session-player/ {
 }
 ```
 
-### 问题 4：端口被占用
+### 问题 5：端口被占用
 
 **症状**: `Error: listen EADDRINUSE`
 
@@ -344,18 +416,35 @@ npm start
 2. **权限**: 需要读取 JSONL 文件的权限
 3. **文件大小**: 完整会话可能很大（500KB+）
 4. **浏览器兼容**: 需要支持 ES6 的现代浏览器
-5. **录制文件**: 包含完整会话历史，可能包含敏感信息
+5. **录制文件**: 包含完整会话历史，可能包含敏感信息，不要提交到 Git
+6. **元数据文件**: `metadata.json` 运行时自动创建，不提交；提交 `metadata.example.json` 作为模板
+7. **Markdown 渲染**: 仅对助手回复和工具消息启用，用户消息保持纯文本（安全）
 
 ---
 
 ## 🚀 扩展建议
 
-- [ ] 添加搜索功能
+- [ ] 添加搜索功能（已实现基础搜索）
 - [ ] 支持导出为 PDF/Markdown
 - [ ] 添加消息高亮/标记
 - [ ] 支持多会话对比
 - [ ] 添加时间轴跳转
 - [ ] 支持语音播放（TTS）
+- [ ] 添加会话分享功能
+- [ ] 支持批量操作（批量移动、批量删除）
+
+---
+
+## 🔒 安全建议
+
+| 建议 | 说明 |
+|------|------|
+| **录制文件** | 已在 `.gitignore` 中，不要提交 |
+| **配置文件** | `config/config.json` 已忽略，使用示例文件 |
+| **元数据** | `metadata.json` 运行时创建，不提交 |
+| **域名脱敏** | 文档中使用 `<your-domain>` 占位符 |
+| **API 密钥** | 不要硬编码在代码中 |
+| **SMTP 凭据** | 通过环境变量或配置文件管理 |
 
 ---
 
@@ -366,9 +455,10 @@ MIT License
 ---
 
 **作者**: Zed  
-**版本**: 1.0.1  
-**最后更新**: 2026-03-04
+**版本**: 2.0.0  
+**最后更新**: 2026-03-11
 
 **更新日志**:
+- v2.0.0: 分类管理系统、Markdown 渲染、拖拽功能
 - v1.0.1: 添加工作空间规范说明，明确录制文件存储位置
 - v1.0.0: 初始版本发布
