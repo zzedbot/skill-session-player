@@ -215,49 +215,116 @@
             white-space: nowrap;
         }
 
-        .filter-item select {
-            padding: 8px 35px 8px 12px;
+        /* ===== 自定义下拉框 ===== */
+        .custom-select {
+            position: relative;
+            min-width: 120px;
+        }
+
+        .custom-select-trigger {
+            padding: 8px 35px 8px 15px;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
             border: 1px solid rgba(0, 217, 255, 0.3);
             border-radius: 20px;
             color: #fff;
             cursor: pointer;
             font-size: 0.9rem;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d9ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
             transition: all 0.3s ease;
-            min-width: 120px;
+            user-select: none;
         }
 
-        .filter-item select:hover {
+        .custom-select-trigger:hover {
             border-color: #00d9ff;
             background-color: rgba(0, 217, 255, 0.15);
         }
 
-        .filter-item select:focus {
-            outline: none;
+        .custom-select-trigger.active {
             border-color: #00ff88;
             box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
             background-color: rgba(0, 217, 255, 0.2);
         }
 
-        .filter-item select option {
+        .custom-select-arrow {
+            font-size: 0.7rem;
+            color: #00d9ff;
+            transition: transform 0.3s ease;
+        }
+
+        .custom-select-trigger.active .custom-select-arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 217, 255, 0.2);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select-dropdown.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .custom-select-option {
+            padding: 12px 18px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .custom-select-option:hover {
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.2), rgba(0, 255, 136, 0.1));
             color: #fff;
-            padding: 10px;
         }
 
-        .filter-item select option:hover {
+        .custom-select-option.selected {
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.3), rgba(0, 255, 136, 0.2));
+            color: #fff;
+            border-left: 3px solid #00d9ff;
+        }
+
+        .custom-select-option .check-icon {
+            opacity: 0;
+            color: #00ff88;
+            font-size: 1rem;
+        }
+
+        .custom-select-option.selected .check-icon {
+            opacity: 1;
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar-thumb {
             background: rgba(0, 217, 255, 0.3);
-        }
-
-        .filter-item select option:checked {
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
-            color: #1a1a2e;
+            border-radius: 3px;
         }
 
         .checkbox-label {
@@ -817,7 +884,15 @@
             
             <div class="form-group">
                 <label>分类</label>
-                <select id="edit-category"></select>
+                <input type="hidden" id="edit-category">
+                <div class="custom-select" id="edit-category-select">
+                    <div class="custom-select-trigger" onclick="toggleCustomSelect('edit-category')">
+                        <span id="edit-category-value">选择分类...</span>
+                        <span class="custom-select-arrow">▼</span>
+                    </div>
+                    <div class="custom-select-dropdown" id="edit-category-dropdown">
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
@@ -896,9 +971,19 @@
                 <div class="filter-group">
                     <div class="filter-item">
                         <label>🏷️ 标签:</label>
-                        <select id="filter-tag" onchange="loadRecordings()">
-                            <option value="all">全部标签</option>
-                        </select>
+                        <input type="hidden" id="filter-tag" value="all">
+                        <div class="custom-select" id="filter-tag-select">
+                            <div class="custom-select-trigger" onclick="toggleCustomSelect('filter-tag')">
+                                <span id="filter-tag-value">全部标签</span>
+                                <span class="custom-select-arrow">▼</span>
+                            </div>
+                            <div class="custom-select-dropdown" id="filter-tag-dropdown">
+                                <div class="custom-select-option selected" onclick="selectOption('filter-tag', 'all', '全部标签')">
+                                    <span class="check-icon">✓</span>
+                                    <span>全部标签</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="filter-item">
@@ -1053,21 +1138,86 @@
             }
         }
 
+        // ===== 自定义下拉框 =====
+        function toggleCustomSelect(id) {
+            const trigger = document.querySelector(`#${id}-select .custom-select-trigger`);
+            const dropdown = document.querySelector(`#${id}-dropdown`);
+            
+            // 关闭其他下拉框
+            document.querySelectorAll('.custom-select-dropdown').forEach(d => {
+                if (d.id !== `${id}-dropdown`) {
+                    d.classList.remove('show');
+                    d.previousElementSibling.classList.remove('active');
+                }
+            });
+            
+            trigger.classList.toggle('active');
+            dropdown.classList.toggle('show');
+        }
+
+        function selectOption(id, value, label) {
+            // 更新选中值
+            document.querySelector(`#${id}-select .custom-select-trigger span:first-child`).textContent = label;
+            
+            // 更新选项选中状态
+            const dropdown = document.querySelector(`#${id}-dropdown`);
+            dropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.getAttribute('data-value') === value || 
+                    (opt.textContent.trim() === label && value === 'all')) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            // 关闭下拉框
+            dropdown.classList.remove('show');
+            dropdown.previousElementSibling.classList.remove('active');
+            
+            // 触发筛选
+            if (id === 'filter-tag') {
+                document.getElementById('filter-tag').value = value;
+                loadRecordings();
+            } else if (id === 'edit-category') {
+                document.getElementById('edit-category').value = value;
+                document.getElementById('edit-category-value').textContent = value;
+            }
+        }
+
+        // 点击外部关闭下拉框
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select')) {
+                document.querySelectorAll('.custom-select-dropdown').forEach(d => {
+                    d.classList.remove('show');
+                    d.previousElementSibling.classList.remove('active');
+                });
+            }
+        });
+
         // ===== 加载筛选器选项 =====
         async function loadFilters() {
             try {
                 // 加载标签
                 const tagRes = await fetch('/session-player/api/tags');
                 const tagData = await tagRes.json();
-                const tagSelect = document.getElementById('filter-tag');
-                const currentTag = tagSelect.value;
+                const dropdown = document.getElementById('filter-tag-dropdown');
+                const currentValue = document.getElementById('filter-tag').value;
                 
-                tagSelect.innerHTML = '<option value="all">全部标签</option>' +
-                    (tagData.tags || []).map(t => 
-                        `<option value="${t}">${t}</option>`
-                    ).join('');
+                // 保留第一个"全部标签"选项，更新其他选项
+                const options = ['<div class="custom-select-option selected" onclick="selectOption(\'filter-tag\', \'all\', \'全部标签\')"><span class="check-icon">✓</span><span>全部标签</span></div>'];
                 
-                tagSelect.value = currentTag;
+                (tagData.tags || []).forEach(t => {
+                    const selected = t === currentValue ? 'selected' : '';
+                    options.push(`
+                        <div class="custom-select-option ${selected}" 
+                             onclick="selectOption('filter-tag', '${escapeHtml(t)}', '${escapeHtml(t)}')"
+                             data-value="${escapeHtml(t)}">
+                            <span class="check-icon">✓</span>
+                            <span>${escapeHtml(t)}</span>
+                        </div>
+                    `);
+                });
+                
+                dropdown.innerHTML = options.join('');
 
             } catch (error) {
                 console.error('加载筛选器失败:', error);
@@ -1117,12 +1267,23 @@
                 // 加载分类选项
                 const catRes = await fetch('/session-player/api/categories');
                 const catData = await catRes.json();
-                const catSelect = document.getElementById('edit-category');
-                catSelect.innerHTML = '<option value="uncategorized">uncategorized</option>' +
-                    (catData.categories || []).filter(c => c !== 'uncategorized').map(c => 
-                        `<option value="${c}">${c}</option>`
-                    ).join('');
-                catSelect.value = category;
+                const dropdown = document.getElementById('edit-category-dropdown');
+                const categories = ['uncategorized', ...(catData.categories || []).filter(c => c !== 'uncategorized')];
+                
+                const options = categories.map(c => {
+                    const selected = c === category ? 'selected' : '';
+                    return `
+                        <div class="custom-select-option ${selected}" 
+                             onclick="selectOption('edit-category', '${c}', '${c}')">
+                            <span class="check-icon">✓</span>
+                            <span>${c}</span>
+                        </div>
+                    `;
+                });
+                
+                dropdown.innerHTML = options.join('');
+                document.getElementById('edit-category-value').textContent = category;
+                document.getElementById('edit-category').value = category;
 
                 const modal = document.getElementById('edit-modal');
                 modal.classList.add('show');
